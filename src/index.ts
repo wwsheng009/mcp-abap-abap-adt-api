@@ -18,6 +18,7 @@ import { ClassHandlers } from './handlers/ClassHandlers.js';
 import { CodeAnalysisHandlers } from './handlers/CodeAnalysisHandlers.js';
 import { ObjectLockHandlers } from './handlers/ObjectLockHandlers.js';
 import { ObjectSourceHandlers } from './handlers/ObjectSourceHandlers.js';
+import { ObjectSourceHandlersV2 } from './handlersV2/ObjectSourceHandlersV2.js';
 import { ObjectDeletionHandlers } from './handlers/ObjectDeletionHandlers.js';
 import { ObjectManagementHandlers } from './handlers/ObjectManagementHandlers.js';
 import { ObjectRegistrationHandlers } from './handlers/ObjectRegistrationHandlers.js';
@@ -36,6 +37,10 @@ import { AtcHandlers } from './handlers/AtcHandlers.js';
 import { TraceHandlers } from './handlers/TraceHandlers.js';
 import { RefactorHandlers } from './handlers/RefactorHandlers.js';
 import { RevisionHandlers } from './handlers/RevisionHandlers.js';
+import { filterToolsByGroups, TOOL_GROUPS, getEnabledToolGroups, getEnabledToolNames } from './toolGroups.js';
+
+// Export tool groups for reference
+export { TOOL_GROUPS as MCP_TOOL_GROUPS } from './toolGroups.js';
 
 config({ path: path.resolve(__dirname, '../.env') });
 
@@ -48,6 +53,7 @@ export class AbapAdtServer extends Server {
   private codeAnalysisHandlers: CodeAnalysisHandlers;
   private objectLockHandlers: ObjectLockHandlers;
   private objectSourceHandlers: ObjectSourceHandlers;
+  private objectSourceHandlersV2: ObjectSourceHandlersV2;
   private objectDeletionHandlers: ObjectDeletionHandlers;
   private objectManagementHandlers: ObjectManagementHandlers;
   private objectRegistrationHandlers: ObjectRegistrationHandlers;
@@ -102,6 +108,7 @@ export class AbapAdtServer extends Server {
     this.codeAnalysisHandlers = new CodeAnalysisHandlers(this.adtClient);
     this.objectLockHandlers = new ObjectLockHandlers(this.adtClient);
     this.objectSourceHandlers = new ObjectSourceHandlers(this.adtClient);
+    this.objectSourceHandlersV2 = new ObjectSourceHandlersV2(this.adtClient);
     this.objectDeletionHandlers = new ObjectDeletionHandlers(this.adtClient);
     this.objectManagementHandlers = new ObjectManagementHandlers(this.adtClient);
     this.objectRegistrationHandlers = new ObjectRegistrationHandlers(this.adtClient);
@@ -174,42 +181,49 @@ export class AbapAdtServer extends Server {
 
   private setupToolHandlers() {
     this.setRequestHandler(ListToolsRequestSchema, async () => {
-      return {
-        tools: [
-          ...this.authHandlers.getTools(),
-          ...this.transportHandlers.getTools(),
-          ...this.objectHandlers.getTools(),
-          ...this.classHandlers.getTools(),
-          ...this.codeAnalysisHandlers.getTools(),
-          ...this.objectLockHandlers.getTools(),
-          ...this.objectSourceHandlers.getTools(),
-          ...this.objectDeletionHandlers.getTools(),
-          ...this.objectManagementHandlers.getTools(),
-          ...this.objectRegistrationHandlers.getTools(),
-            ...this.nodeHandlers.getTools(),
-            ...this.discoveryHandlers.getTools(),
-            ...this.unitTestHandlers.getTools(),
-            ...this.prettyPrinterHandlers.getTools(),
-            ...this.gitHandlers.getTools(),
-            ...this.ddicHandlers.getTools(),
-            ...this.serviceBindingHandlers.getTools(),
-            ...this.queryHandlers.getTools(),
-            ...this.feedHandlers.getTools(),
-            ...this.debugHandlers.getTools(),
-            ...this.renameHandlers.getTools(),
-            ...this.atcHandlers.getTools(),
-            ...this.traceHandlers.getTools(),
-            ...this.refactorHandlers.getTools(),
-            ...this.revisionHandlers.getTools(),
-            {
-            name: 'healthcheck',
-            description: 'Check server health and connectivity',
-            inputSchema: {
-              type: 'object',
-              properties: {}
-            }
+      // Collect all tools from handlers
+      const allTools = [
+        ...this.authHandlers.getTools(),
+        ...this.transportHandlers.getTools(),
+        ...this.objectHandlers.getTools(),
+        ...this.classHandlers.getTools(),
+        ...this.codeAnalysisHandlers.getTools(),
+        ...this.objectLockHandlers.getTools(),
+        ...this.objectSourceHandlers.getTools(),
+        ...this.objectSourceHandlersV2.getTools(),
+        ...this.objectDeletionHandlers.getTools(),
+        ...this.objectManagementHandlers.getTools(),
+        ...this.objectRegistrationHandlers.getTools(),
+        ...this.nodeHandlers.getTools(),
+        ...this.discoveryHandlers.getTools(),
+        ...this.unitTestHandlers.getTools(),
+        ...this.prettyPrinterHandlers.getTools(),
+        ...this.gitHandlers.getTools(),
+        ...this.ddicHandlers.getTools(),
+        ...this.serviceBindingHandlers.getTools(),
+        ...this.queryHandlers.getTools(),
+        ...this.feedHandlers.getTools(),
+        ...this.debugHandlers.getTools(),
+        ...this.renameHandlers.getTools(),
+        ...this.atcHandlers.getTools(),
+        ...this.traceHandlers.getTools(),
+        ...this.refactorHandlers.getTools(),
+        ...this.revisionHandlers.getTools(),
+        {
+          name: 'healthcheck',
+          description: 'Check server health and connectivity',
+          inputSchema: {
+            type: 'object',
+            properties: {}
           }
-        ]
+        }
+      ];
+
+      // Filter tools by enabled groups
+      const filteredTools = filterToolsByGroups(allTools);
+
+      return {
+        tools: filteredTools
       };
     });
 
@@ -274,6 +288,11 @@ export class AbapAdtServer extends Server {
             case 'getObjectSource':
             case 'setObjectSource':
                 result = await this.objectSourceHandlers.handle(request.params.name, request.params.arguments);
+                break;
+            case 'getObjectSourceV2':
+            case 'grepObjectSource':
+            case 'setObjectSourceV2':
+                result = await this.objectSourceHandlersV2.handle(request.params.name, request.params.arguments);
                 break;
             case 'deleteObject':
                 result = await this.objectDeletionHandlers.handle(request.params.name, request.params.arguments);
@@ -411,19 +430,38 @@ export class AbapAdtServer extends Server {
   async run() {
     const transport = new StdioServerTransport();
     await this.connect(transport);
+
+    // Log enabled tool groups
+    const enabledGroups = getEnabledToolGroups();
+    const enabledTools = getEnabledToolNames();
+
     console.error('MCP ABAP ADT API server running on stdio');
-    
+    console.error(`Enabled tool groups (${enabledGroups.length}): ${enabledGroups.join(', ')}`);
+    console.error(`Total tools available: ${enabledTools.size}`);
+
+    // List available tool groups for reference
+    const allGroups = Object.keys(TOOL_GROUPS);
+    const disabledGroups = allGroups.filter(g => !enabledGroups.includes(g));
+    if (disabledGroups.length > 0 && process.env.MCP_TOOLS) {
+      console.error(`Available groups (disabled): ${disabledGroups.join(', ')}`);
+    } else if (!process.env.MCP_TOOLS) {
+      console.error('');
+      console.error('To enable tool groups, set MCP_TOOLS environment variable:');
+      console.error('  Example: MCP_TOOLS=auth,transport,source,sourceV2,lock,object,class');
+      console.error(`  Available groups: ${allGroups.join(', ')}`);
+    }
+
     // Handle shutdown
     process.on('SIGINT', async () => {
       await this.close();
       process.exit(0);
     });
-    
+
     process.on('SIGTERM', async () => {
       await this.close();
       process.exit(0);
     });
-    
+
     // Handle errors
     this.onerror = (error) => {
       console.error('[MCP Error]', error);

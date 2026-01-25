@@ -2,7 +2,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.4.1",
     "@types/node": "^22.10.10",
-    "abap-adt-api": "^6.2.0",
+    "abap-adt-api": "file:../abap-adt-api",
     "dotenv": "^16.4.7",
     "typescript": "^5.7.3"
   },
@@ -15,7 +15,8 @@
     "test:coverage": "jest --coverage",
     "build": "tsc -p tsconfig.json",
     "start": "node ./dist/index.js",
-    "dev": "npx @modelcontextprotocol/inspector ./dist/index.js"
+    "dev": "npx @modelcontextprotocol/inspector ./dist/index.js",
+    "postinstall": "cd ../abap-adt-api && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
