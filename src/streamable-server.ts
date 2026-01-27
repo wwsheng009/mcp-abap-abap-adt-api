@@ -1,322 +1,37 @@
 #!/usr/bin/env node
 
+/**
+ * Streamable HTTP Server (Stateful) Entry Point
+ * 
+ * Production-ready server with session persistence and reconnection support.
+ */
+
 import { config } from 'dotenv';
 import { createServer as createHttpServer, IncomingMessage, ServerResponse } from 'http';
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  McpError,
-  ErrorCode
-} from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from 'crypto';
-import { ADTClient, session_types } from "abap-adt-api";
 import path from 'path';
-
-// Import all handlers
-import { AuthHandlers } from './handlers/AuthHandlers.js';
-import { TransportHandlers } from './handlers/TransportHandlers.js';
-import { ObjectHandlers } from './handlers/ObjectHandlers.js';
-import { ClassHandlers } from './handlers/ClassHandlers.js';
-import { CodeAnalysisHandlers } from './handlers/CodeAnalysisHandlers.js';
-import { ObjectLockHandlers } from './handlers/ObjectLockHandlers.js';
-import { ObjectSourceHandlers } from './handlers/ObjectSourceHandlers.js';
-import { ObjectSourceHandlersV2 } from './handlersV2/ObjectSourceHandlersV2.js';
-import { ObjectDeletionHandlers } from './handlers/ObjectDeletionHandlers.js';
-import { ObjectManagementHandlers } from './handlers/ObjectManagementHandlers.js';
-import { ObjectRegistrationHandlers } from './handlers/ObjectRegistrationHandlers.js';
-import { NodeHandlers } from './handlers/NodeHandlers.js';
-import { DiscoveryHandlers } from './handlers/DiscoveryHandlers.js';
-import { UnitTestHandlers } from './handlers/UnitTestHandlers.js';
-import { PrettyPrinterHandlers } from './handlers/PrettyPrinterHandlers.js';
-import { GitHandlers } from './handlers/GitHandlers.js';
-import { DdicHandlers } from './handlers/DdicHandlers.js';
-import { ServiceBindingHandlers } from './handlers/ServiceBindingHandlers.js';
-import { QueryHandlers } from './handlers/QueryHandlers.js';
-import { FeedHandlers } from './handlers/FeedHandlers.js';
-import { DebugHandlers } from './handlers/DebugHandlers.js';
-import { RenameHandlers } from './handlers/RenameHandlers.js';
-import { AtcHandlers } from './handlers/AtcHandlers.js';
-import { TraceHandlers } from './handlers/TraceHandlers.js';
-import { RefactorHandlers } from './handlers/RefactorHandlers.js';
-import { RevisionHandlers } from './handlers/RevisionHandlers.js';
-import { filterToolsByGroups } from './toolGroups.js';
 
 // Load environment variables
 config({ path: path.resolve(__dirname, '../.env') });
 
-/**
- * MCP Server with Streamable HTTP support
- */
-class AbapAdtServerStreaming extends Server {
-  private adtClient: ADTClient;
-  private handlers: any;
+import { AbapAdtServerBase } from './server/AbapAdtServerBase.js';
+import { getEnabledToolGroups } from './toolGroups.js';
 
-  constructor() {
-    super(
-      {
-        name: "mcp-abap-abap-adt-api-streamable",
-        version: "0.2.0",
-      },
-      {
-        capabilities: {
-          tools: {},
-        },
-      }
-    );
+async function startServer(port: number = 3000) {
+  const server = new AbapAdtServerBase(
+    "mcp-abap-abap-adt-api-streamable",
+    "0.2.0"
+  );
 
-    const missingVars = ['SAP_URL', 'SAP_USER', 'SAP_PASSWORD'].filter(v => !process.env[v]);
-    if (missingVars.length > 0) {
-      throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-    }
-
-    this.adtClient = new ADTClient(
-      process.env.SAP_URL as string,
-      process.env.SAP_USER as string,
-      process.env.SAP_PASSWORD as string,
-      process.env.SAP_CLIENT as string,
-      process.env.SAP_LANGUAGE as string
-    );
-    this.adtClient.stateful = session_types.stateful;
-
-    // Initialize all handlers
-    this.handlers = {
-      auth: new AuthHandlers(this.adtClient),
-      transport: new TransportHandlers(this.adtClient),
-      object: new ObjectHandlers(this.adtClient),
-      class: new ClassHandlers(this.adtClient),
-      codeAnalysis: new CodeAnalysisHandlers(this.adtClient),
-      objectLock: new ObjectLockHandlers(this.adtClient),
-      objectSource: new ObjectSourceHandlers(this.adtClient),
-      objectSourceV2: new ObjectSourceHandlersV2(this.adtClient),
-      objectDeletion: new ObjectDeletionHandlers(this.adtClient),
-      objectManagement: new ObjectManagementHandlers(this.adtClient),
-      objectRegistration: new ObjectRegistrationHandlers(this.adtClient),
-      node: new NodeHandlers(this.adtClient),
-      discovery: new DiscoveryHandlers(this.adtClient),
-      unitTest: new UnitTestHandlers(this.adtClient),
-      prettyPrinter: new PrettyPrinterHandlers(this.adtClient),
-      git: new GitHandlers(this.adtClient),
-      ddic: new DdicHandlers(this.adtClient),
-      serviceBinding: new ServiceBindingHandlers(this.adtClient),
-      query: new QueryHandlers(this.adtClient),
-      feed: new FeedHandlers(this.adtClient),
-      debug: new DebugHandlers(this.adtClient),
-      rename: new RenameHandlers(this.adtClient),
-      atc: new AtcHandlers(this.adtClient),
-      trace: new TraceHandlers(this.adtClient),
-      refactor: new RefactorHandlers(this.adtClient),
-      revision: new RevisionHandlers(this.adtClient),
-    };
-
-    this.setupToolHandlers();
-  }
-
-  private setupToolHandlers() {
-    // Collect all tools from handlers
-    const allTools = [
-      ...this.handlers.auth.getTools(),
-      ...this.handlers.transport.getTools(),
-      ...this.handlers.object.getTools(),
-      ...this.handlers.class.getTools(),
-      ...this.handlers.codeAnalysis.getTools(),
-      ...this.handlers.objectLock.getTools(),
-      ...this.handlers.objectSource.getTools(),
-      ...this.handlers.objectSourceV2.getTools(),
-      ...this.handlers.objectDeletion.getTools(),
-      ...this.handlers.objectManagement.getTools(),
-      ...this.handlers.objectRegistration.getTools(),
-      ...this.handlers.node.getTools(),
-      ...this.handlers.discovery.getTools(),
-      ...this.handlers.unitTest.getTools(),
-      ...this.handlers.prettyPrinter.getTools(),
-      ...this.handlers.git.getTools(),
-      ...this.handlers.ddic.getTools(),
-      ...this.handlers.serviceBinding.getTools(),
-      ...this.handlers.query.getTools(),
-      ...this.handlers.feed.getTools(),
-      ...this.handlers.debug.getTools(),
-      ...this.handlers.rename.getTools(),
-      ...this.handlers.atc.getTools(),
-      ...this.handlers.trace.getTools(),
-      ...this.handlers.refactor.getTools(),
-      ...this.handlers.revision.getTools(),
-      // Add streaming demo tool
-      {
-        name: 'streamingDemo',
-        description: 'Demonstrates streaming responses with progress updates',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            steps: {
-              type: 'number',
-              description: 'Number of progress steps',
-              default: 5
-            },
-            delayMs: {
-              type: 'number',
-              description: 'Delay per step (ms)',
-              default: 1000
-            }
-          }
-        }
-      },
-      {
-        name: 'healthcheck',
-        description: 'Check server health',
-        inputSchema: {
-          type: 'object',
-          properties: {}
-        }
-      }
-    ];
-
-    this.setRequestHandler(ListToolsRequestSchema, async () => {
-      const filteredTools = filterToolsByGroups(allTools);
-      return { tools: filteredTools };
-    });
-
-    this.setRequestHandler(CallToolRequestSchema, async (request) => {
-      try {
-        let result: any;
-
-        switch (request.params.name) {
-          case 'healthcheck':
-            result = {
-              status: 'healthy',
-              timestamp: new Date().toISOString(),
-              transport: 'streamable-http'
-            };
-            break;
-
-          case 'streamingDemo':
-            result = await this.handleStreamingDemo(request);
-            break;
-
-          // Route to handlers
-          case 'login':
-          case 'logout':
-          case 'dropSession':
-            result = await this.handlers.auth.handle(request.params.name, request.params.arguments);
-            break;
-
-          case 'transportInfo':
-          case 'createTransport':
-          case 'hasTransportConfig':
-          case 'transportConfigurations':
-          case 'getTransportConfiguration':
-          case 'setTransportsConfig':
-          case 'createTransportsConfig':
-          case 'userTransports':
-          case 'transportsByConfig':
-          case 'transportDelete':
-          case 'transportRelease':
-          case 'transportSetOwner':
-          case 'transportAddUser':
-          case 'systemUsers':
-          case 'transportReference':
-            result = await this.handlers.transport.handle(request.params.name, request.params.arguments);
-            break;
-
-          case 'lock':
-          case 'unLock':
-            result = await this.handlers.objectLock.handle(request.params.name, request.params.arguments);
-            break;
-
-          case 'objectStructure':
-          case 'searchObject':
-          case 'findObjectPath':
-          case 'objectTypes':
-          case 'reentranceTicket':
-            result = await this.handlers.object.handle(request.params.name, request.params.arguments);
-            break;
-
-          case 'classIncludes':
-          case 'classComponents':
-            result = await this.handlers.class.handle(request.params.name, request.params.arguments);
-            break;
-
-          case 'getObjectSourceV2':
-          case 'grepObjectSource':
-          case 'setObjectSourceV2':
-            result = await this.handlers.objectSourceV2.handle(request.params.name, request.params.arguments);
-            break;
-
-          case 'syntaxCheckCode':
-          case 'syntaxCheckCdsUrl':
-          case 'codeCompletion':
-          case 'findDefinition':
-          case 'usageReferences':
-            result = await this.handlers.codeAnalysis.handle(request.params.name, request.params.arguments);
-            break;
-
-          default:
-            throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
-        }
-
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, (key, value) =>
-              typeof value === 'bigint' ? value.toString() : value
-            , 2)
-          }]
-        };
-      } catch (error: any) {
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              error: error.message || 'Unknown error',
-              code: error.code || ErrorCode.InternalError
-            })
-          }],
-          isError: true
-        };
-      }
-    });
-  }
-
-  /**
-   * Streaming demo - sends progress updates
-   */
-  private async handleStreamingDemo(request: any): Promise<any> {
-    const { steps = 5, delayMs = 1000 } = request.params.arguments || {};
-    const results: string[] = [];
-
-    for (let i = 1; i <= steps; i++) {
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-      results.push(`Step ${i} completed`);
-    }
-
-    return {
-      status: 'success',
-      duration: `${steps * delayMs}ms`,
-      steps: results.length,
-      results
-    };
-  }
-}
-
-/**
- * Start Streamable HTTP Server
- */
-async function startStreamableServer(port: number = 3000) {
-  // Create MCP server
-  const server = new AbapAdtServerStreaming();
-
-  // Create Streamable HTTP transport (stateful mode)
+  // Stateful transport with session ID generation
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
   });
 
-  // Connect server to transport
   await server.connect(transport);
 
-  // Create HTTP server
   const httpServer = createHttpServer(async (req: IncomingMessage, res: ServerResponse) => {
-    // Enable CORS - include Accept header for client capability negotiation
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id, Accept');
@@ -327,25 +42,21 @@ async function startStreamableServer(port: number = 3000) {
       return;
     }
 
-    // Health check endpoint
     if (req.url === '/health' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         status: 'healthy',
-        timestamp: new Date().toISOString(),
-        transport: 'streamable-http'
+        mode: 'stateful',
+        timestamp: new Date().toISOString()
       }));
       return;
     }
 
-    // Handle MCP requests at /mcp endpoint
     if (req.url?.startsWith('/mcp')) {
       try {
-        // Let transport handle all request parsing (POST body, GET SSE, etc.)
         await transport.handleRequest(req, res);
       } catch (error: any) {
-        console.error('Error handling MCP request:', error);
-        // Only send error if headers not already sent (e.g., by SSE stream)
+        console.error('Error:', error);
         if (!res.headersSent) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: error.message }));
@@ -354,47 +65,24 @@ async function startStreamableServer(port: number = 3000) {
       return;
     }
 
-    // 404 for other paths
     res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found', availableEndpoints: ['/mcp', '/health'] }));
+    res.end(JSON.stringify({ error: 'Not found' }));
   });
 
-  // Setup transport event handlers
-  transport.onclose = () => {
-    console.error('[Transport] Connection closed');
-  };
-
-  transport.onerror = (error) => {
-    console.error('[Transport] Error:', error);
-  };
-
-  // Start listening
   httpServer.listen(port, () => {
-    const enabledGroups = process.env.MCP_TOOLS || 'full';
+    const enabledGroups = getEnabledToolGroups();
     console.error(`╔════════════════════════════════════════════════════════════╗`);
-    console.error(`║  MCP ABAP ADT - Streamable HTTP Server                     ║`);
+    console.error(`║  MCP ABAP ADT - Streamable HTTP (Stateful)                ║`);
     console.error(`╠════════════════════════════════════════════════════════════╣`);
     console.error(`║  MCP Endpoint:      http://localhost:${port}/mcp             ║`);
-    console.error(`║  Health Check:      http://localhost:${port}/health          ║`);
+    console.error(`║  Mode:              STATEFUL (session persistence)         ║`);
+    console.error(`║  Ideal for:         Production clients                      ║`);
     console.error(`╠════════════════════════════════════════════════════════════╣`);
-    console.error(`║  Tool Groups:       ${enabledGroups.padEnd(39)}║`);
+    console.error(`║  Tool Groups:       ${enabledGroups.join(', ').padEnd(39)}║`);
     console.error(`║  Streaming:         AUTO (JSON or SSE based on client)        ║`);
     console.error(`╚════════════════════════════════════════════════════════════╝`);
-    console.error('');
-    console.error('Client usage:');
-    console.error('```typescript');
-    console.error("import { Client } from '@modelcontextprotocol/sdk/client';");
-    console.error("import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp';");
-    console.error('');
-    console.error('const client = new Client({ name: "my-client", version: "1.0.0" });');
-    console.error('const transport = new StreamableHTTPClientTransport(');
-    console.error(`  new URL("http://localhost:${port}/mcp")`);
-    console.error(');');
-    console.error('await client.connect(transport);');
-    console.error('```');
   });
 
-  // Handle shutdown
   const shutdown = async () => {
     console.error('\n[Server] Shutting down...');
     httpServer.close();
@@ -405,16 +93,7 @@ async function startStreamableServer(port: number = 3000) {
 
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
-
-  httpServer.on('error', (error) => {
-    console.error('[HTTP Server Error]', error);
-  });
 }
 
-// Get port from environment or use default
 const port = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 3000;
-
-startStreamableServer(port).catch((error) => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
-});
+startServer(port).catch(console.error);
