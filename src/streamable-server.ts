@@ -316,10 +316,10 @@ async function startStreamableServer(port: number = 3000) {
 
   // Create HTTP server
   const httpServer = createHttpServer(async (req: IncomingMessage, res: ServerResponse) => {
-    // Enable CORS
+    // Enable CORS - include Accept header for client capability negotiation
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id, Accept');
 
     if (req.method === 'OPTIONS') {
       res.writeHead(200);
@@ -340,27 +340,17 @@ async function startStreamableServer(port: number = 3000) {
 
     // Handle MCP requests at /mcp endpoint
     if (req.url?.startsWith('/mcp')) {
-      // Parse body for POST requests
-      if (req.method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', async () => {
-          try {
-            const parsedBody = body ? JSON.parse(body) : undefined;
-            await transport.handleRequest(req, res, parsedBody);
-          } catch (error: any) {
-            console.error('Error handling request:', error);
-            if (!res.headersSent) {
-              res.writeHead(400, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ error: error.message }));
-            }
-          }
-        });
-        return;
+      try {
+        // Let transport handle all request parsing (POST body, GET SSE, etc.)
+        await transport.handleRequest(req, res);
+      } catch (error: any) {
+        console.error('Error handling MCP request:', error);
+        // Only send error if headers not already sent (e.g., by SSE stream)
+        if (!res.headersSent) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: error.message }));
+        }
       }
-
-      // Handle GET (SSE) and other requests
-      await transport.handleRequest(req, res);
       return;
     }
 
@@ -388,7 +378,7 @@ async function startStreamableServer(port: number = 3000) {
     console.error(`║  Health Check:      http://localhost:${port}/health          ║`);
     console.error(`╠════════════════════════════════════════════════════════════╣`);
     console.error(`║  Tool Groups:       ${enabledGroups.padEnd(39)}║`);
-    console.error(`║  Streaming:         ENABLED (SSE + stateful sessions)       ║`);
+    console.error(`║  Streaming:         AUTO (JSON or SSE based on client)        ║`);
     console.error(`╚════════════════════════════════════════════════════════════╝`);
     console.error('');
     console.error('Client usage:');
