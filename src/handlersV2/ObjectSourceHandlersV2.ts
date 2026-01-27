@@ -12,6 +12,150 @@ interface GrepMatch {
   contextAfter?: string[];
 }
 
+/**
+ * Parameter validation utilities
+ */
+class ParamValidator {
+  /**
+   * Validate source URL
+   */
+  static validateSourceUrl(sourceUrl: any): void {
+    if (!sourceUrl || typeof sourceUrl !== 'string') {
+      throw new McpError(ErrorCode.InvalidRequest,
+        'sourceUrl parameter is missing or invalid: must be a non-empty string');
+    }
+    const trimmed = sourceUrl.trim();
+    if (trimmed.length === 0) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        'sourceUrl cannot be an empty string');
+    }
+    if (!trimmed.startsWith('/')) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        'sourceUrl format is invalid: must be an absolute path starting with /');
+    }
+  }
+
+  /**
+   * Validate line number (positive integer)
+   */
+  static validateLineNumber(value: any, paramName: string): number {
+    if (value === undefined || value === null) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `${paramName} parameter is missing`);
+    }
+    const num = Number(value);
+    if (!Number.isInteger(num)) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `${paramName} must be an integer, received: ${value}`);
+    }
+    if (num < 1) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `${paramName} must be >= 1, received: ${value}`);
+    }
+    return num;
+  }
+
+  /**
+   * Validate line range
+   * @returns [startLine, endLine] with defaults applied
+   */
+  static validateLineRange(startLine: any, endLine: any, maxLines: number): [number, number] {
+    const start = startLine !== undefined ? this.validateLineNumber(startLine, 'startLine') : 1;
+    const end = endLine !== undefined ? this.validateLineNumber(endLine, 'endLine') : maxLines;
+
+    if (end < start) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `endLine (${end}) cannot be less than startLine (${start})`);
+    }
+
+    if (start > maxLines) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `startLine (${start}) exceeds total file lines (${maxLines})`);
+    }
+
+    if (end > maxLines) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `endLine (${end}) exceeds total file lines (${maxLines})`);
+    }
+
+    return [start, end];
+  }
+
+  /**
+   * Validate non-empty string
+   */
+  static validateNonEmptyString(value: any, paramName: string): string {
+    if (!value || typeof value !== 'string') {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `${paramName} parameter is missing or invalid: must be a non-empty string`);
+    }
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `${paramName} cannot be an empty string`);
+    }
+    return trimmed;
+  }
+
+  /**
+   * Validate boolean parameter
+   */
+  static validateBoolean(value: any, paramName: string, defaultValue: boolean): boolean {
+    if (value === undefined || value === null) {
+      return defaultValue;
+    }
+    if (typeof value !== 'boolean') {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `${paramName} must be a boolean value, received: ${typeof value}`);
+    }
+    return value;
+  }
+
+  /**
+   * Validate positive integer
+   */
+  static validatePositiveInteger(value: any, paramName: string, defaultValue: number): number {
+    if (value === undefined || value === null) {
+      return defaultValue;
+    }
+    const num = Number(value);
+    if (!Number.isInteger(num) || num < 1) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `${paramName} must be a positive integer, received: ${value}`);
+    }
+    return num;
+  }
+
+  /**
+   * Validate non-negative integer
+   */
+  static validateNonNegativeInteger(value: any, paramName: string, defaultValue: number): number {
+    if (value === undefined || value === null) {
+      return defaultValue;
+    }
+    const num = Number(value);
+    if (!Number.isInteger(num) || num < 0) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `${paramName} must be a non-negative integer, received: ${value}`);
+    }
+    return num;
+  }
+
+  /**
+   * Validate regex pattern
+   */
+  static validatePattern(pattern: any): string {
+    const str = this.validateNonEmptyString(pattern, 'pattern');
+    try {
+      new RegExp(str);
+      return str;
+    } catch (error: any) {
+      throw new McpError(ErrorCode.InvalidRequest,
+        `pattern regex is invalid: ${str} - ${error.message}`);
+    }
+  }
+}
+
 // Extended input schema type with enum and default support
 interface ExtendedInputSchemaProperty {
   type: string;
@@ -56,21 +200,21 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
       // getObjectSourceV2
       {
         name: 'getObjectSourceV2',
-        description: '读取 ABAP 源代码，支持行号范围和版本标识。直接传入 sourceUrl',
+        description: 'Read ABAP source code with line range support and version token. Pass the direct source URL',
         inputSchema: {
           type: 'object',
           properties: {
             sourceUrl: {
               type: 'string',
-              description: '源代码 URL (可直接从 objectStructure 的 abapsource:sourceUri 获取)'
+              description: 'Source code URL (get from objectStructure abapsource:sourceUri)'
             },
             startLine: {
               type: 'number',
-              description: '起始行号 (1-based, 包含, 默认: 1)'
+              description: 'Start line number (1-based, inclusive, default: 1)'
             },
             endLine: {
               type: 'number',
-              description: '结束行号 (1-based, 包含, 默认: 文件末尾)'
+              description: 'End line number (1-based, inclusive, default: end of file)'
             }
           },
           required: ['sourceUrl']
@@ -79,31 +223,31 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
       // grepObjectSource
       {
         name: 'grepObjectSource',
-        description: '在源代码中搜索匹配的行（正则表达式）',
+        description: 'Search source code for lines matching a pattern (regex)',
         inputSchema: {
           type: 'object',
           properties: {
             sourceUrl: {
               type: 'string',
-              description: '源代码 URL'
+              description: 'Source code URL'
             },
             pattern: {
               type: 'string',
-              description: '搜索模式 (支持正则表达式)'
+              description: 'Search pattern (supports regex)'
             },
             caseInsensitive: {
               type: 'boolean',
-              description: '忽略大小写',
+              description: 'Case insensitive search',
               default: false
             },
             contextLines: {
               type: 'number',
-              description: '上下文行数',
+              description: 'Number of context lines',
               default: 0
             },
             maxMatches: {
               type: 'number',
-              description: '最大匹配数',
+              description: 'Maximum number of matches',
               default: 100
             }
           },
@@ -113,41 +257,41 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
       // setObjectSourceV2
       {
         name: 'setObjectSourceV2',
-        description: '修改源代码的指定行号范围，支持版本冲突检测',
+        description: 'Modify source code for a specific line range with version conflict detection',
         inputSchema: {
           type: 'object',
           properties: {
             sourceUrl: {
               type: 'string',
-              description: '源代码 URL'
+              description: 'Source code URL'
             },
             token: {
               type: 'string',
-              description: 'getObjectSourceV2 返回的版本标识'
+              description: 'Version token returned by getObjectSourceV2'
             },
             startLine: {
               type: 'number',
-              description: '起始行号 (1-based, 包含)'
+              description: 'Start line number (1-based, inclusive)'
             },
             endLine: {
               type: 'number',
-              description: '结束行号 (1-based, 包含)'
+              description: 'End line number (1-based, inclusive)'
             },
             content: {
               type: 'string',
-              description: '新的内容 (将替换指定行号范围)'
+              description: 'New content (will replace the specified line range)'
             },
             lockHandle: {
               type: 'string',
-              description: '对象锁定句柄 (通过 lock 工具获取)'
+              description: 'Object lock handle (obtained via lock tool)'
             },
             transport: {
               type: 'string',
-              description: '传输请求号 (可选)'
+              description: 'Transport request number (optional)'
             },
             skipConflictCheck: {
               type: 'boolean',
-              description: '跳过冲突检查 (不推荐)',
+              description: 'Skip conflict check (not recommended)',
               default: false
             }
           },
@@ -180,23 +324,32 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
   private async handleGetObjectSourceV2(args: any): Promise<any> {
     const startTime = performance.now();
     try {
-      // 1. Get source code directly
+      // 1. Validate parameters
+      ParamValidator.validateSourceUrl(args.sourceUrl);
+
+      // 2. Get source code
       const fullSource = await this.adtclient.getObjectSource(args.sourceUrl);
       const lines = fullSource.split('\n');
+      const lineCount = lines.length;
 
-      // 2. Slice by line range
-      const startLine = args.startLine ?? 1;
-      const endLine = args.endLine ?? lines.length;
+      // 3. Validate and apply line range
+      const [startLine, endLine] = ParamValidator.validateLineRange(
+        args.startLine,
+        args.endLine,
+        lineCount
+      );
+
+      // 4. Extract content
       const content = lines.slice(startLine - 1, endLine).join('\n');
 
-      // 3. Generate token (content hash)
+      // 5. Generate token (content hash)
       const token = TokenUtils.generateToken(Date.now(), fullSource);
 
-      // 4. Cache
+      // 6. Cache
       this.cache.set(args.sourceUrl, {
         token,
         changedAt: Date.now(),
-        lineCount: lines.length,
+        lineCount,
         objectUrl: args.sourceUrl
       });
 
@@ -210,7 +363,7 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
             data: {
               content,
               token,
-              lineCount: lines.length,
+              lineCount,
               startLine,
               endLine
             }
@@ -219,6 +372,10 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
       };
     } catch (error: any) {
       this.trackRequest(startTime, false);
+      // Re-throw McpError as-is
+      if (error instanceof McpError) {
+        throw error;
+      }
       throw new McpError(
         ErrorCode.InternalError,
         `Failed to get source: ${error.message || 'Unknown error'}`
@@ -232,25 +389,23 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
   private async handleGrepObjectSource(args: any): Promise<any> {
     const startTime = performance.now();
     try {
-      // 1. Get source code
+      // 1. Validate parameters
+      ParamValidator.validateSourceUrl(args.sourceUrl);
+      const pattern = ParamValidator.validatePattern(args.pattern);
+      const caseInsensitive = ParamValidator.validateBoolean(args.caseInsensitive, 'caseInsensitive', false);
+      const contextLines = ParamValidator.validateNonNegativeInteger(args.contextLines, 'contextLines', 0);
+      const maxMatches = ParamValidator.validatePositiveInteger(args.maxMatches, 'maxMatches', 100);
+
+      // 2. Get source code
       const fullSource = await this.adtclient.getObjectSource(args.sourceUrl);
       const lines = fullSource.split('\n');
 
-      // 2. Compile regex
-      const flags = args.caseInsensitive ? 'gi' : 'g';
-      let regex: RegExp;
+      // 3. Compile regex
+      const flags = caseInsensitive ? 'gi' : 'g';
+      const regex = new RegExp(pattern, flags);
 
-      try {
-        regex = new RegExp(args.pattern, flags);
-      } catch (error: any) {
-        throw new McpError(ErrorCode.InvalidRequest,
-          `Invalid regular expression: ${args.pattern}`);
-      }
-
-      // 3. Search matches
+      // 4. Search matches
       const matches: GrepMatch[] = [];
-      const maxMatches = args.maxMatches ?? 100;
-      const contextLines = args.contextLines ?? 0;
 
       for (let i = 0; i < lines.length && matches.length < maxMatches; i++) {
         const line = lines[i];
@@ -286,7 +441,7 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
               matches,
               matchCount: matches.length,
               lineCount: lines.length,
-              pattern: args.pattern,
+              pattern,
               truncated: matches.length >= maxMatches
             }
           })
@@ -294,6 +449,10 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
       };
     } catch (error: any) {
       this.trackRequest(startTime, false);
+      // Re-throw McpError as-is
+      if (error instanceof McpError) {
+        throw error;
+      }
       throw new McpError(
         ErrorCode.InternalError,
         `Failed to grep source: ${error.message || 'Unknown error'}`
@@ -308,46 +467,58 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
   private async handleSetObjectSourceV2(args: any): Promise<any> {
     const startTime = performance.now();
     try {
-      // 1. Validate token (conflict detection)
+      // 1. Validate required parameters
+      ParamValidator.validateSourceUrl(args.sourceUrl);
+      const token = ParamValidator.validateNonEmptyString(args.token, 'token');
+      const lockHandle = ParamValidator.validateNonEmptyString(args.lockHandle, 'lockHandle');
+      const content = ParamValidator.validateNonEmptyString(args.content, 'content');
+      const skipConflictCheck = ParamValidator.validateBoolean(args.skipConflictCheck, 'skipConflictCheck', false);
+
+      // Optional: transport
+      const transport = args.transport ? String(args.transport).trim() : undefined;
+
+      // 2. Get current full source to validate line range
+      const fullSource = await this.adtclient.getObjectSource(args.sourceUrl);
+      const lines = fullSource.split('\n');
+      const lineCount = lines.length;
+
+      // 3. Validate line range
+      const [startLine, endLine] = ParamValidator.validateLineRange(
+        args.startLine,
+        args.endLine,
+        lineCount
+      );
+
+      // 4. Validate token (conflict detection)
       const cached = this.cache.get(args.sourceUrl);
 
-      if (cached && cached.token !== args.token && !args.skipConflictCheck) {
+      if (cached && cached.token !== token && !skipConflictCheck) {
         this.cache.invalidate(args.sourceUrl);
         throw new McpError(ErrorCode.InvalidRequest, JSON.stringify({
-          error: '版本冲突：源代码已被修改',
+          error: 'Version conflict: source code has been modified',
           details: {
-            resolution: '请调用 getObjectSourceV2 重新获取最新内容和 token'
+            resolution: 'Please call getObjectSourceV2 to get the latest content and token'
           }
         }));
       }
 
-      // 2. Get current full source
-      const fullSource = await this.adtclient.getObjectSource(args.sourceUrl);
-      const lines = fullSource.split('\n');
-
-      // 3. Validate line range
-      if (args.startLine < 1 || args.endLine > lines.length) {
-        throw new McpError(ErrorCode.InvalidRequest,
-          `行号超出范围：文件共 ${lines.length} 行，请求范围 ${args.startLine}-${args.endLine}`);
-      }
-
-      // 4. Apply modification
+      // 5. Apply modification
       const newLines = [
-        ...lines.slice(0, args.startLine - 1),
-        ...args.content.split('\n'),
-        ...lines.slice(args.endLine)
+        ...lines.slice(0, startLine - 1),
+        ...content.split('\n'),
+        ...lines.slice(endLine)
       ];
       const newSource = newLines.join('\n');
 
-      // 5. Submit
+      // 6. Submit
       await this.adtclient.setObjectSource(
         args.sourceUrl,
         newSource,
-        args.lockHandle,
-        args.transport
+        lockHandle,
+        transport
       );
 
-      // 6. Invalidate cache
+      // 7. Invalidate cache
       this.cache.invalidate(args.sourceUrl);
 
       this.trackRequest(startTime, true);
@@ -359,14 +530,17 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
             status: 'success',
             data: {
               updated: true,
-              lineCount: newLines.length
+              lineCount: newLines.length,
+              oldRange: [startLine, endLine],
+              newRange: [startLine, startLine + content.split('\n').length - 1]
             }
           })
         }]
       };
     } catch (error: any) {
       this.trackRequest(startTime, false);
-      if (error.code && error.message) {
+      // Re-throw McpError as-is
+      if (error instanceof McpError) {
         throw error;
       }
       throw new McpError(
