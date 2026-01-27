@@ -84,9 +84,20 @@ npx -y @smithery/cli install @mario-andreschak/mcp-abap-abap-adt-api --client cl
 
 5. **Run the Server**
 
+   **Stdio mode (default):**
    ```cmd
    npm run start
    ```
+
+   **HTTP/SSE mode:**
+   ```cmd
+   npm run start:http
+   ```
+
+   The HTTP server will start on port 3000 (configurable via `MCP_PORT` env var):
+   - SSE Endpoint: `http://localhost:3000/sse`
+   - Message Endpoint: `http://localhost:3000/message`
+   - Health Check: `http://localhost:3000/health`
 
    (or alternatively integrate the MCP Server into VSCode)
 
@@ -104,6 +115,34 @@ Once the server is running, you can interact with it using MCP clients or tools 
       ]
     },
 
+```
+
+### HTTP/SSE Mode
+
+The server also supports HTTP transport using Server-Sent Events (SSE). This allows remote clients to connect without stdio.
+
+**Start HTTP server:**
+```bash
+npm run start:http
+# Or with custom port:
+MCP_PORT=8080 npm run start:http
+```
+
+**Endpoints:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/sse` | GET | Establish SSE connection for server → client messages |
+| `/message` | POST | Send client → server messages (requires `X-Session-ID` header) |
+| `/health` | GET | Server health check and connection status |
+| `/tools` | GET | Basic info about available tools |
+
+**Example curl commands:**
+```bash
+# Health check
+curl http://localhost:3000/health
+
+# Connect to SSE (use curl or any SSE client)
+curl -N http://localhost:3000/sse
 ```
 
 ## Custom Instruction

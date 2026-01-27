@@ -469,9 +469,22 @@ export class AbapAdtServer extends Server {
   }
 }
 
-// Create and run server instance
-const server = new AbapAdtServer();
-server.run().catch((error) => {
-  console.error('Failed to start MCP server:', error);
-  process.exit(1);
-});
+// Only run stdio server if this file is executed directly (not imported)
+// Check if we're the main module (CommonJS style)
+const isMainModule = () => {
+  const require = (globalThis as any).require;
+  if (require && require.main) {
+    return require.main === module;
+  }
+  // Fallback: check if file path ends with 'index.js'
+  return process.argv[1].endsWith('index.js') || process.argv[1].endsWith('index.ts');
+};
+
+if (isMainModule()) {
+  // Create and run server instance
+  const server = new AbapAdtServer();
+  server.run().catch((error) => {
+    console.error('Failed to start MCP server:', error);
+    process.exit(1);
+  });
+}

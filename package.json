@@ -14,8 +14,12 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "build": "tsc -p tsconfig.json",
+    "build:examples": "tsc -p examples/tsconfig.json",
     "start": "node ./dist/index.js",
+    "start:http": "node ./dist/http-server.js",
     "dev": "npx @modelcontextprotocol/inspector ./dist/index.js",
+    "dev:http": "MCP_PORT=3000 npm run build && node ./dist/http-server.js",
+    "example:http": "npm run build:examples && node dist-examples/http-client.js",
     "postinstall": "cd ../abap-adt-api && npm install && npm run build"
   },
   "keywords": [],
