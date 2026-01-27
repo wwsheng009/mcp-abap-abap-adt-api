@@ -145,6 +145,46 @@ curl http://localhost:3000/health
 curl -N http://localhost:3000/sse
 ```
 
+### Streamable HTTP Mode (Recommended)
+
+The server supports the new MCP Streamable HTTP transport specification with stateful sessions, automatic reconnection, and improved streaming support.
+
+**Start Streamable HTTP server:**
+```bash
+npm run start:streamable
+# Or with custom port:
+MCP_PORT=8080 npm run start:streamable
+```
+
+**Client usage:**
+```typescript
+import { Client } from "@modelcontextprotocol/sdk/client";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp";
+
+const client = new Client({ name: "my-client", version: "1.0.0" });
+const transport = new StreamableHTTPClientTransport(
+  new URL("http://localhost:3000/mcp")
+);
+
+await client.connect(transport);
+
+// List tools
+const tools = await client.listTools();
+
+// Call a tool
+const result = await client.callTool({
+  name: "searchObject",
+  arguments: { query: "zcl_*" }
+});
+```
+
+**Features:**
+- Stateful sessions with session ID tracking
+- Automatic reconnection with configurable backoff
+- SSE streaming for server-initiated messages
+- Support for long-running operations with progress updates
+- Resumable streams with event ID tracking
+
 ## Custom Instruction
 Use this Custom Instruction to explain the tool to your model:
 ```

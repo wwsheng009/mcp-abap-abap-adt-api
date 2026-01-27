@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.4.1",
+    "@modelcontextprotocol/sdk": "^1.25.3",
     "@types/node": "^22.10.10",
     "abap-adt-api": "file:../abap-adt-api",
     "dotenv": "^16.4.7",
@@ -17,9 +17,14 @@
     "build:examples": "tsc -p examples/tsconfig.json",
     "start": "node ./dist/index.js",
     "start:http": "node ./dist/http-server.js",
+    "start:http:streaming": "node ./dist/http-server-streaming.js",
+    "start:streamable": "node ./dist/streamable-server.js",
     "dev": "npx @modelcontextprotocol/inspector ./dist/index.js",
     "dev:http": "MCP_PORT=3000 npm run build && node ./dist/http-server.js",
+    "dev:http:streaming": "MCP_PORT=3000 npm run build && node ./dist/http-server-streaming.js",
+    "dev:streamable": "MCP_PORT=3000 npm run build && node ./dist/streamable-server.js",
     "example:http": "npm run build:examples && node dist-examples/http-client.js",
+    "example:streamable": "npm run build:examples && node dist-examples/streamable-client.js",
     "postinstall": "cd ../abap-adt-api && npm install && npm run build"
   },
   "keywords": [],
