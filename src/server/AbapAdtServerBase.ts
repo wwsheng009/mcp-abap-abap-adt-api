@@ -139,7 +139,7 @@ export class AbapAdtServerBase extends Server {
       ...this.handlers.objectRegistration.getTools(),
       ...this.handlers.node.getTools(),
       ...this.handlers.discovery.getTools(),
-      ...this.handlers.unitTestHandlers.getTools(),
+      ...this.handlers.unitTest.getTools(),
       ...this.handlers.prettyPrinter.getTools(),
       ...this.handlers.git.getTools(),
       ...this.handlers.ddic.getTools(),
@@ -300,7 +300,7 @@ export class AbapAdtServerBase extends Server {
           case 'unitTestEvaluation':
           case 'unitTestOccurrenceMarkers':
           case 'createTestInclude':
-            result = await this.handlers.unitTestHandlers.handle(request.params.name, request.params.arguments);
+            result = await this.handlers.unitTest.handle(request.params.name, request.params.arguments);
             break;
 
           // Pretty printer tools

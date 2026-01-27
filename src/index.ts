@@ -61,7 +61,7 @@ async function main() {
 }
 
 // Only run if executed directly
-if (require.main === module || process.argv[1].endsWith('index.js')) {
+if (require.main === module || process.argv[1]?.endsWith('index.js')) {
   main().catch((error) => {
     console.error('Failed to start MCP server:', error);
     process.exit(1);
