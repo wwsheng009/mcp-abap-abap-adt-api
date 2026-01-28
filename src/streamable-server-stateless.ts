@@ -17,12 +17,17 @@ config({ path: path.resolve(__dirname, '../.env') });
 
 import { AbapAdtServerBase } from './server/AbapAdtServerBase.js';
 import { getEnabledToolGroups } from './toolGroups.js';
+import { getLogger, TransportType } from './lib/structuredLogger.js';
 
 async function startServer(port: number = 3000) {
   const server = new AbapAdtServerBase(
     "mcp-abap-abap-adt-api-stateless",
     "0.2.0"
   );
+
+  // Set transport type for proper logging
+  (server as any).setTransportType(TransportType.STREAMABLE_HTTP);
+  const logger = getLogger(TransportType.STREAMABLE_HTTP);
 
   // Stateless transport - no session ID generator
   const transport = new StreamableHTTPServerTransport({
@@ -43,6 +48,7 @@ async function startServer(port: number = 3000) {
     }
 
     if (req.url === '/health' && req.method === 'GET') {
+      logger.debug('Health check requested');
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         status: 'healthy',
@@ -56,7 +62,7 @@ async function startServer(port: number = 3000) {
       try {
         await transport.handleRequest(req, res);
       } catch (error: any) {
-        console.error('Error:', error);
+        logger.error('Request handling error', error);
         if (!res.headersSent) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: error.message }));
@@ -71,6 +77,14 @@ async function startServer(port: number = 3000) {
 
   httpServer.listen(port, () => {
     const enabledGroups = getEnabledToolGroups();
+    logger.info('Server started', {
+      port,
+      mode: 'stateless',
+      toolGroups: enabledGroups.join(','),
+      endpoint: `http://localhost:${port}/mcp`,
+      note: 'Designed for MCP Inspector debugging'
+    });
+    
     console.error(`╔════════════════════════════════════════════════════════════╗`);
     console.error(`║  MCP ABAP ADT - Streamable HTTP (Stateless)              ║`);
     console.error(`╠════════════════════════════════════════════════════════════╣`);
@@ -84,7 +98,7 @@ async function startServer(port: number = 3000) {
   });
 
   const shutdown = async () => {
-    console.error('\n[Server] Shutting down...');
+    logger.info('Server shutting down');
     httpServer.close();
     await server.close();
     await transport.close();

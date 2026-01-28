@@ -22,6 +22,9 @@ async function main() {
     "0.2.0"
   );
 
+  // Set transport type for proper logging
+  (server as any).setTransportType('stdio' as any);
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
 

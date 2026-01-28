@@ -19,6 +19,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { ADTClient, session_types } from "abap-adt-api";
 import { filterToolsByGroups } from '../toolGroups.js';
+import { getLogger, TransportType } from '../lib/structuredLogger.js';
 
 // Import all handlers
 import { AuthHandlers } from '../handlers/AuthHandlers.js';
@@ -57,6 +58,8 @@ import { RevisionHandlers } from '../handlers/RevisionHandlers.js';
 export class AbapAdtServerBase extends Server {
   protected adtClient: ADTClient;
   protected handlers: any;
+  protected logger: ReturnType<typeof getLogger>;
+  protected transportType: TransportType = TransportType.STDIO;
 
   constructor(serverName: string, serverVersion: string = "0.2.0") {
     super(
@@ -117,7 +120,18 @@ export class AbapAdtServerBase extends Server {
       revision: new RevisionHandlers(this.adtClient),
     };
 
+    // Initialize logger (default to stdio, can be overridden)
+    this.logger = getLogger(this.transportType);
+
     this.setupToolHandlers();
+  }
+
+  /**
+   * Set the transport type and initialize corresponding logger
+   */
+  protected setTransportType(transport: TransportType): void {
+    this.transportType = transport;
+    this.logger = getLogger(transport);
   }
 
   /**
