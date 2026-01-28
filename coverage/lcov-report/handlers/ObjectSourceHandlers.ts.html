@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.45% </span>
+                <span class="strong">13.63% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>10/22</span>
+                <span class='fraction'>3/22</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">14.28% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/7</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/4</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.45% </span>
+                <span class="strong">13.63% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>10/22</span>
+                <span class='fraction'>3/22</span>
             </div>
         
             
@@ -203,9 +203,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -215,11 +215,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -305,24 +305,24 @@ export class ObjectSourceHandlers extends BaseHandler {
     ];
   }
 &nbsp;
-  async handle(toolName: string, args: any): Promise&lt;any&gt; {
-    switch (toolName) {
+  async <span class="fstat-no" title="function not covered" >handle(</span>toolName: string, args: any): Promise&lt;any&gt; {
+<span class="cstat-no" title="statement not covered" >    switch (toolName) {</span>
       case 'getObjectSource':
-        return this.handleGetObjectSource(args);
-<span class="branch-1 cbranch-no" title="branch not covered" >      case 'setObjectSource':</span>
+<span class="cstat-no" title="statement not covered" >        return this.handleGetObjectSource(args);</span>
+      case 'setObjectSource':
 <span class="cstat-no" title="statement not covered" >        return this.handleSetObjectSource(args);</span>
-<span class="branch-2 cbranch-no" title="branch not covered" >      default:</span>
+      default:
 <span class="cstat-no" title="statement not covered" >        throw new McpError(ErrorCode.MethodNotFound, `Unknown object source tool: ${toolName}`);</span>
     }
   }
 &nbsp;
-  async handleGetObjectSource(args: any): Promise&lt;any&gt; {
+  async <span class="fstat-no" title="function not covered" >handleGetObjectSource(</span>args: any): Promise&lt;any&gt; {
     
-    const startTime = performance.now();
-    try {
-      const source = await this.adtclient.getObjectSource(args.objectSourceUrl, args.options);
-      this.trackRequest(startTime, true);
-      return {
+    const startTime = <span class="cstat-no" title="statement not covered" >performance.now();</span>
+<span class="cstat-no" title="statement not covered" >    try {</span>
+      const source = <span class="cstat-no" title="statement not covered" >await this.adtclient.getObjectSource(args.objectSourceUrl, args.options);</span>
+<span class="cstat-no" title="statement not covered" >      this.trackRequest(startTime, true);</span>
+<span class="cstat-no" title="statement not covered" >      return {</span>
         content: [
           {
             type: 'text',
@@ -379,7 +379,7 @@ export class ObjectSourceHandlers extends BaseHandler {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-01-25T15:55:39.947Z
+                at 2026-01-28T04:50:31.380Z
             </div>
         <script src="../prettify.js"></script>
         <script>
