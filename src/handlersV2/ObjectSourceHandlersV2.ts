@@ -1,9 +1,10 @@
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
 import type { ADTClient } from "abap-adt-api";
-import { BaseHandler } from '../handlers/BaseHandler';
+import { BaseHandler, RequestLogContext } from '../handlers/BaseHandler';
 import type { ToolDefinition } from '../types/tools';
 import { SourceCache } from '../lib/sourceCache';
 import { TokenUtils } from '../lib/tokenUtils';
+import { performance } from 'perf_hooks';
 
 interface GrepMatch {
   lineNumber: number;
@@ -305,15 +306,37 @@ export class ObjectSourceHandlersV2 extends BaseHandler {
    * Handle tool requests
    */
   async handle(toolName: string, args: any): Promise<any> {
-    switch (toolName) {
-      case 'getObjectSourceV2':
-        return this.handleGetObjectSourceV2(args);
-      case 'grepObjectSource':
-        return this.handleGrepObjectSource(args);
-      case 'setObjectSourceV2':
-        return this.handleSetObjectSourceV2(args);
-      default:
-        throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${toolName}`);
+    const requestId = this.generateRequestId();
+    const context: RequestLogContext = { requestId, toolName, arguments: args };
+    
+    this.logRequestStart(context);
+    const startTime = performance.now();
+    
+    try {
+      let result: any;
+      
+      switch (toolName) {
+        case 'getObjectSourceV2':
+          result = await this.handleGetObjectSourceV2(args);
+          break;
+        case 'grepObjectSource':
+          result = await this.handleGrepObjectSource(args);
+          break;
+        case 'setObjectSourceV2':
+          result = await this.handleSetObjectSourceV2(args);
+          break;
+        default:
+          throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${toolName}`);
+      }
+      
+      this.trackRequest(startTime, true, context);
+      return result;
+    } catch (error: any) {
+      this.trackRequest(startTime, false, context);
+      if (!(error instanceof McpError)) {
+        this.logRequestError(error, context);
+      }
+      throw error;
     }
   }
 

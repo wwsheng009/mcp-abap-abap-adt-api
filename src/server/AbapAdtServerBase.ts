@@ -20,6 +20,8 @@ import {
 import { ADTClient, session_types } from "abap-adt-api";
 import { filterToolsByGroups } from '../toolGroups.js';
 import { getLogger, TransportType } from '../lib/structuredLogger.js';
+import { performance } from 'perf_hooks';
+import { randomUUID } from 'crypto';
 
 // Import all handlers
 import { AuthHandlers } from '../handlers/AuthHandlers.js';
@@ -135,6 +137,13 @@ export class AbapAdtServerBase extends Server {
   }
 
   /**
+   * Generate a unique request ID
+   */
+  protected generateRequestId(): string {
+    return randomUUID();
+  }
+
+  /**
    * Setup all tool handlers
    */
   private setupToolHandlers() {
@@ -184,10 +193,23 @@ export class AbapAdtServerBase extends Server {
 
     // Register tool call handler
     this.setRequestHandler(CallToolRequestSchema, async (request) => {
+      const toolName = request.params.name;
+      const requestId = this.generateRequestId();
+
+      // Log request start
+      this.logger.info('Tool invocation started', {
+        requestId,
+        toolName,
+        hasArguments: Object.keys(request.params.arguments || {}).length > 0
+      });
+
+      const startTime = performance.now();
+      let success = true;
+
       try {
         let result: any;
 
-        switch (request.params.name) {
+        switch (toolName) {
           case 'healthcheck':
             result = {
               status: 'healthy',
@@ -429,11 +451,37 @@ export class AbapAdtServerBase extends Server {
             break;
 
           default:
-            throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
+            throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${toolName}`);
         }
 
-        return this.serializeResult(result);
+        const duration = performance.now() - startTime;
+
+        // Log request completion
+        this.logger.info('Tool invocation completed', {
+          requestId,
+          toolName,
+          duration: Math.round(duration * 100) / 100,
+          success
+        });
+        const toolResult = this.serializeResult(result);
+        this.logger.info('Tool invocation result', {
+          requestId,
+          toolName,
+          result: toolResult
+        });
+        return toolResult;
       } catch (error) {
+        success = false;
+        const duration = performance.now() - startTime;
+
+        // Log error
+        this.logger.error('Tool invocation failed', {
+          requestId,
+          toolName,
+          duration: Math.round(duration * 100) / 100,
+          error: error instanceof Error ? error.message : String(error)
+        });
+
         return this.handleError(error);
       }
     });
@@ -444,12 +492,17 @@ export class AbapAdtServerBase extends Server {
    */
   protected serializeResult(result: any) {
     try {
+      // // If result is already in MCP format (has content array), return it as is
+      // if (result && typeof result === 'object' && Array.isArray(result.content)) {
+      //   return result;
+      // }
+
       return {
         content: [{
           type: 'text',
           text: JSON.stringify(result, (key, value) =>
             typeof value === 'bigint' ? value.toString() : value
-          , 2)
+            , 2)
         }]
       };
     } catch (error) {

@@ -214,6 +214,7 @@ export class Logger {
    * Info level logging
    */
   info(message: string, data?: Record<string, any>): void {
+   
     this.log(LogLevel.INFO, message, data);
   }
 
@@ -273,6 +274,18 @@ export class Logger {
     
     this.info(message, {
       sessionId,
+      ...data
+    });
+  }
+
+  /**
+   * Log Stdio connection events
+   */
+  logStdioConnection(event: 'connect' | 'disconnect' | 'error', data?: Record<string, any>): void {
+    const message = event === 'connect' ? 'Stdio connected' : 
+                    event === 'disconnect' ? 'Stdio disconnected' : 'Stdio error';
+    
+    this.info(message, {
       ...data
     });
   }

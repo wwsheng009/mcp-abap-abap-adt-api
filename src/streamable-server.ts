@@ -81,9 +81,14 @@ async function startServer(port: number = 3000) {
       port,
       mode: 'stateful',
       toolGroups: enabledGroups.join(','),
-      endpoint: `http://localhost:${port}/mcp`
+      endpoint: `http://localhost:${port}/mcp`,
+      displayInfo: {
+        title: 'MCP ABAP ADT - Streamable HTTP (Stateful)',
+        mode: 'STATEFUL (session persistence)',
+        idealFor: 'Production clients'
+      }
     });
-    
+
     console.error(`╔════════════════════════════════════════════════════════════╗`);
     console.error(`║  MCP ABAP ADT - Streamable HTTP (Stateful)                ║`);
     console.error(`╠════════════════════════════════════════════════════════════╣`);
@@ -109,4 +114,9 @@ async function startServer(port: number = 3000) {
 }
 
 const port = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 3000;
-startServer(port).catch(console.error);
+startServer(port).catch((error) => {
+  const logger = getLogger(TransportType.STREAMABLE_HTTP);
+  logger.error('Server failed to start', error);
+  console.error('Failed to start server:', error);
+  process.exit(1);
+});

@@ -118,9 +118,12 @@ async function startHttpServer(port: number = 3000) {
       transport: 'SSE',
       toolGroups: enabledGroups.join(','),
       sseEndpoint: `http://localhost:${port}/sse`,
-      messageEndpoint: `http://localhost:${port}/message`
+      messageEndpoint: `http://localhost:${port}/message`,
+      displayInfo: {
+        title: 'MCP ABAP ADT - HTTP/SSE Server (Legacy)'
+      }
     });
-    
+
     console.error(`╔════════════════════════════════════════════════════════════╗`);
     console.error(`║  MCP ABAP ADT - HTTP/SSE Server (Legacy)                  ║`);
     console.error(`╠════════════════════════════════════════════════════════════╣`);
@@ -145,4 +148,9 @@ async function startHttpServer(port: number = 3000) {
 }
 
 const port = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 3000;
-startHttpServer(port).catch(console.error);
+startHttpServer(port).catch((error) => {
+  const logger = getLogger(TransportType.SSE);
+  logger.error('Server failed to start', error);
+  console.error('Failed to start server:', error);
+  process.exit(1);
+});

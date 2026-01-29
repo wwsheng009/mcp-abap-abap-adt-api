@@ -1,6 +1,7 @@
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
-import { BaseHandler } from './BaseHandler.js';
+import { BaseHandler, RequestLogContext } from './BaseHandler.js';
 import type { ToolDefinition } from '../types/tools.js';
+import { performance } from 'perf_hooks';
 
 export class AuthHandlers extends BaseHandler {
   getTools(): ToolDefinition[] {
@@ -33,15 +34,37 @@ export class AuthHandlers extends BaseHandler {
   }
 
   async handle(toolName: string, args: any): Promise<any> {
-    switch (toolName) {
-      case 'login':
-        return this.handleLogin(args);
-      case 'logout':
-        return this.handleLogout(args);
-      case 'dropSession':
-        return this.handleDropSession(args);
-      default:
-        throw new McpError(ErrorCode.MethodNotFound, `Unknown auth tool: ${toolName}`);
+    const requestId = this.generateRequestId();
+    const context: RequestLogContext = { requestId, toolName, arguments: args };
+    
+    this.logRequestStart(context);
+    const startTime = performance.now();
+    
+    try {
+      let result: any;
+      
+      switch (toolName) {
+        case 'login':
+          result = await this.handleLogin(args);
+          break;
+        case 'logout':
+          result = await this.handleLogout(args);
+          break;
+        case 'dropSession':
+          result = await this.handleDropSession(args);
+          break;
+        default:
+          throw new McpError(ErrorCode.MethodNotFound, `Unknown auth tool: ${toolName}`);
+      }
+      
+      this.trackRequest(startTime, true, context);
+      return result;
+    } catch (error: any) {
+      this.trackRequest(startTime, false, context);
+      if (!(error instanceof McpError)) {
+        this.logRequestError(error, context);
+      }
+      throw error;
     }
   }
 

@@ -1,7 +1,8 @@
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
-import { BaseHandler } from './BaseHandler.js';
+import { BaseHandler, RequestLogContext } from './BaseHandler.js';
 import type { ToolDefinition } from '../types/tools.js';
 import { ADTClient } from "abap-adt-api";
+import { performance } from 'perf_hooks';
 
 export class ObjectHandlers extends BaseHandler {
     getTools(): ToolDefinition[] {
@@ -83,19 +84,43 @@ export class ObjectHandlers extends BaseHandler {
     }
 
     async handle(toolName: string, args: any): Promise<any> {
-        switch (toolName) {
-            case 'objectStructure':
-                return this.handleObjectStructure(args);
-            case 'findObjectPath':
-                return this.handleFindObjectPath(args);
-            case 'searchObject':
-                return this.handleSearchObject(args);
-            case 'objectTypes':
-                return this.handleObjectTypes(args);
-            case 'reentranceTicket':
-                return this.handleReentranceTicket(args);
-            default:
-                throw new McpError(ErrorCode.MethodNotFound, `Unknown object tool: ${toolName}`);
+        const requestId = this.generateRequestId();
+        const context: RequestLogContext = { requestId, toolName, arguments: args };
+        
+        this.logRequestStart(context);
+        const startTime = performance.now();
+        
+        try {
+            let result: any;
+            
+            switch (toolName) {
+                case 'objectStructure':
+                    result = await this.handleObjectStructure(args);
+                    break;
+                case 'findObjectPath':
+                    result = await this.handleFindObjectPath(args);
+                    break;
+                case 'searchObject':
+                    result = await this.handleSearchObject(args);
+                    break;
+                case 'objectTypes':
+                    result = await this.handleObjectTypes(args);
+                    break;
+                case 'reentranceTicket':
+                    result = await this.handleReentranceTicket(args);
+                    break;
+                default:
+                    throw new McpError(ErrorCode.MethodNotFound, `Unknown object tool: ${toolName}`);
+            }
+            
+            this.trackRequest(startTime, true, context);
+            return result;
+        } catch (error: any) {
+            this.trackRequest(startTime, false, context);
+            if (!(error instanceof McpError)) {
+                this.logRequestError(error, context);
+            }
+            throw error;
         }
     }
 

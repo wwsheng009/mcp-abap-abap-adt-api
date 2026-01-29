@@ -3,6 +3,18 @@
  * Controls which tool groups are enabled via environment variables
  */
 
+// Logger will be created lazily to respect environment variables set by server entry points
+let logger: any = null;
+
+function getLoggerInstance() {
+  if (!logger) {
+    // Import dynamically to use environment variables set by server entry points
+    const { getLogger, TransportType } = require('./lib/structuredLogger.js');
+    logger = getLogger(TransportType.STDIO);
+  }
+  return logger;
+}
+
 export interface ToolGroup {
   name: string;
   description: string;
@@ -262,9 +274,14 @@ export function getEnabledToolGroups(): string[] {
   const unknownGroups = requestedGroups.filter(g => !validGroups.includes(g));
 
   if (unknownGroups.length > 0) {
-    console.warn(`[MCP] Unknown tool groups: ${unknownGroups.join(', ')}`);
-    console.warn(`[MCP] Available presets: ${Object.keys(PRESET_LEVELS).join(', ')}`);
-    console.warn(`[MCP] Available groups: ${validGroups.join(', ')}`);
+    const log = getLoggerInstance();
+    if (log) {
+      log.warn('Unknown tool groups', {
+        unknownGroups,
+        availablePresets: Object.keys(PRESET_LEVELS),
+        availableGroups: validGroups
+      });
+    }
   }
 
   return requestedGroups.filter(g => validGroups.includes(g));
@@ -304,10 +321,14 @@ export function filterToolsByGroups(tools: any[]): any[] {
   const enabledCount = filtered.length;
 
   if (enabledCount < totalTools) {
-    console.log(`[MCP] Enabled ${enabledCount}/${totalTools} tools`);
-    console.log(`[MCP] Disabled groups: ${Object.keys(TOOL_GROUPS)
-      .filter(g => !getEnabledToolGroups().includes(g))
-      .join(', ')}`);
+    const log = getLoggerInstance();
+    if (log) {
+      log.info('Tool filtering summary', {
+        enabledCount,
+        totalCount: totalTools,
+        disabledGroups: Object.keys(TOOL_GROUPS).filter(g => !getEnabledToolGroups().includes(g))
+      });
+    }
   }
 
   return filtered;
