@@ -18,6 +18,7 @@
     "start:http": "node ./dist/http-server.js",
     "start:streamable": "node --import tsx ./src/streamable-server.ts",
     "start:streamable:stateless": "node --import tsx ./src/streamable-server-stateless.ts",
+    "dev-legacy": "npx @modelcontextprotocol/inspector ./dist/legacy-stdio-bridge.js",
     "dev": "npx @modelcontextprotocol/inspector ./dist/index.js",
     "inspector": "npx --yes @modelcontextprotocol/inspector http://localhost:3000/mcp",
     "postinstall": "cd ../abap-adt-api && npm install && npm run build"

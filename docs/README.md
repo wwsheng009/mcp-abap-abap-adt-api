@@ -138,6 +138,7 @@ MCP ABAP ADT API Server 是一个基于 Model Context Protocol (MCP) 的服务�
 ## 项目结构
 
 ```
+<<<<<<< HEAD
 mcp-abap-abap-adt-api/
 ├── src/
 │   ├── index.ts                              # 服务器入口和主类
@@ -192,6 +193,34 @@ mcp-abap-abap-adt-api/
 - **依赖库**: abap-adt-api ^6.2.0, @modelcontextprotocol/sdk ^1.4.1
 - **当前版本**: 0.1.1
 
+=======
+mcp/
+├── src/
+│   ├── index.ts                  # 服务器入口
+│   ├── handlers/                 # 工具处理器
+│   │   ├── AuthHandlers.ts       # 身份验证
+│   │   ├── ObjectHandlers.ts     # 对象操作
+│   │   ├── TransportHandlers.ts  # 传输管理
+│   │   ├── DebugHandlers.ts      # 调试功能
+│   │   └── ...
+│   ├── lib/                     # 工具库
+│   │   └── logger.ts             # 日志系统
+│   └── types/                   # 类型定义
+│       └── tools.ts              # 工具类型
+├── docs/                         # 文档
+│   ├── README.md                 # 本文档
+│   ├── quickstart.md             # 快速开始
+│   ├── installation.md           # 安装指南
+│   ├── architecture.md           # 架构文档
+│   ├── handlers.md               # 处理器文档
+│   ├── tools-reference.md        # 工具参考
+│   └── development.md            # 开发指南
+├── package.json
+├── tsconfig.json
+└── .env.example                  # 环境变量模板
+```
+
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
 ## 核心概念
 
 ### MCP (Model Context Protocol)

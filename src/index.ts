@@ -1,27 +1,5 @@
 #!/usr/bin/env node
 
-// CRITICAL: Override all console methods to use stderr to prevent stdout pollution in stdio mode
-// Any text written to stdout will break the JSON-RPC protocol
-// const originalConsole = {...console};
-// console.log = console.error;
-// console.debug = console.error;
-// console.info = console.error;
-// console.warn = console.error;
-// Keep trace as error but don't override if already different
-// if (console.trace === originalConsole.trace) {
-//   console.trace = console.error;
-// }
-
-// // Also override process.stdout.write to redirect to stderr
-// const originalStdoutWrite = process.stdout.write;
-// process.stdout.write = function(chunk: any, encoding?: any, cb?: any) {
-//   // If it's a Buffer or string, redirect to stderr
-//   if (Buffer.isBuffer(chunk) || typeof chunk === 'string') {
-//     return process.stderr.write(chunk, encoding, cb);
-//   }
-//   return originalStdoutWrite.call(process.stdout, chunk, encoding, cb);
-// };
-
 /**
  * Stdio Server Entry Point
  * 
@@ -38,8 +16,15 @@ config({ path: path.resolve(__dirname, '../.env') });
 import { AbapAdtServerBase } from './server/AbapAdtServerBase.js';
 import { getEnabledToolGroups, getEnabledToolNames, TOOL_GROUPS } from './toolGroups.js';
 import { getLogger, TransportType } from './lib/structuredLogger.js';
+import { protectStdout } from './lib/stdioFirewall.js';
 
 async function main() {
+  // Set MCP stdio mode to enable protocol protection
+  process.env.MCP_STDIO_MODE = 'true';
+  
+  // Activate stdout firewall to prevent protocol pollution
+  protectStdout();
+
   // Create logger and log connection events
   // For Stdio transport, disable console output to avoid interfering with MCP communication
   process.env.LOG_CONSOLE = 'false';

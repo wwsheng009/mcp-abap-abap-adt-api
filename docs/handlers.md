@@ -12,7 +12,11 @@
 |---|--------|--------|------|
 | 1 | `AuthHandlers` | 3 | 身份验证（登录/登出/会话） |
 | 2 | `ObjectHandlers` | 5 | 对象基本操作（搜索/结构/查找） |
+<<<<<<< HEAD
 | 3 | `TransportHandlers` | 15 | 传输管理完整生命周期 |
+=======
+| 3 | `TransportHandlers` | 13 | 传输管理完整生命周期 |
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
 | 4 | `ObjectLockHandlers` | 2 | 对象锁定/解锁 |
 | 5 | `ObjectSourceHandlers` | 2 | 源代码读写 |
 | 6 | `ObjectManagementHandlers` | 3 | 对象激活和管理 |
@@ -20,9 +24,15 @@
 | 8 | `NodeHandlers` | 2 | 节点内容和主程序 |
 | 9 | `DiscoveryHandlers` | 7 | ADT 发现和类型信息 |
 | 10 | `ClassHandlers` | 2 | 类专用操作（包含/组件） |
+<<<<<<< HEAD
 | 11 | `CodeAnalysisHandlers` | 15 | 代码分析（语法/补全/导航） |
 | 12 | `PrettyPrinterHandlers` | 3 | ABAP 代码格式化 |
 | 13 | `GitHandlers` | 10 | abapGit 完整集成 |
+=======
+| 11 | `CodeAnalysisHandlers` | 13 | 代码分析（语法/补全/导航） |
+| 12 | `PrettyPrinterHandlers` | 3 | ABAP 代码格式化 |
+| 13 | `GitHandlers` | 11 | abapGit 完整集成 |
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
 | 14 | `DdicHandlers` | 4 | 数据字典操作 |
 | 15 | `ServiceBindingHandlers` | 3 | 服务绑定管理 |
 | 16 | `QueryHandlers` | 2 | 数据库查询 |
@@ -35,7 +45,11 @@
 | 23 | `ObjectDeletionHandlers` | 1 | 对象删除 |
 | 24 | `RevisionHandlers` | 1 | 版本历史 |
 
+<<<<<<< HEAD
 **总计**: 24 个处理器，121 个工具
+=======
+**总计**: 25 个处理器，约 120+ 个工具
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
 
 ## 详细说明
 
@@ -86,6 +100,7 @@
 
 **文件**: `src/handlers/TransportHandlers.ts`
 
+<<<<<<< HEAD
 **工具数量**: 15个
 
 **工具**:
@@ -104,6 +119,17 @@
 - `transportAddUser` - 添加传输用户
 - `systemUsers` - 获取系统用户列表
 - `transportReference` - 获取传输引用
+=======
+**工具**:
+- `transportInfo` - 获取对象传输信息
+- `createTransport` - 创建新传输请求
+- `userTransports` - 获取用户的传输列表
+- `transportRelease` - 释放传输
+- `transportDelete` - 删除传输
+- `hasTransportConfig` - 检查系统是否支持传输配置
+- `transportConfigurations` - 获取传输配置列表
+- 等等...
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
 
 **核心功能**:
 - 传输请求的完整生命周期管理
@@ -215,6 +241,7 @@
 
 **文件**: `src/handlers/CodeAnalysisHandlers.ts`
 
+<<<<<<< HEAD
 **工具数量**: 15个
 
 **工具**:
@@ -232,6 +259,16 @@
 - `fixEdits` - 应用快速修复
 - `fragmentMappings` - 片段映射
 - `abapDocumentation` - 获取 ABAP 关键字文档
+=======
+**工具**:
+- `syntaxCheckCode` - 执行 ABAP 语法检查
+- `codeCompletion` - 获取代码补全建议
+- `findDefinition` - 查找定义位置
+- `usageReferences` - 查找使用引用
+- `fixProposals` - 获取快速修复建议
+- `abapDocumentation` - 获取 ABAP 关键字文档
+- 等等...
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
 
 **分析功能**:
 - 静态代码分析
@@ -259,6 +296,7 @@
 
 **文件**: `src/handlers/GitHandlers.ts`
 
+<<<<<<< HEAD
 **工具数量**: 10个
 
 **工具**:
@@ -272,6 +310,16 @@
 - `checkRepo` - 检查仓库
 - `remoteRepoInfo` - 获取远程仓库信息 (已废弃)
 - `switchRepoBranch` - 切换分支
+=======
+**工具**:
+- `gitRepos` - 列出所有 abapGit 仓库
+- `gitCreateRepo` - 创建新仓库
+- `gitPullRepo` - 拉取远程变更
+- `stageRepo` - 暂存本地变更
+- `pushRepo` - 推送到远程仓库
+- `switchRepoBranch` - 切换分支
+- 等等...
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
 
 **Git 操作**:
 - 仓库管理

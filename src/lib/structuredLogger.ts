@@ -8,11 +8,13 @@
  * - Structured JSON output for easy parsing
  * - Request/Response tracking with timing
  * - Sensitive data sanitization
+ * - MCP protocol protection (auto-detects stdio mode)
  */
 
 import fs from 'fs';
 import path from 'path';
 import { IncomingMessage } from 'http';
+import { isMcpStdioMode } from './runtimeMode.js';
 
 export enum LogLevel {
   DEBUG = 0,
@@ -187,17 +189,17 @@ export class Logger {
 
     const formatted = formatLogEntry(entry);
 
-    // Console logging
-    if (this.config.enableConsole) {
+    // Console logging (only if NOT in MCP stdio mode)
+    if (this.config.enableConsole && !isMcpStdioMode()) {
       console.error(formatted);
     }
 
-    // Stdio logging (stderr)
-    if (this.config.enableStdio) {
+    // Stdio logging (stderr) (only if NOT in MCP stdio mode)
+    if (this.config.enableStdio && !isMcpStdioMode()) {
       console.error(formatted);
     }
 
-    // File logging
+    // File logging (always enabled in MCP stdio mode)
     if (this.config.enableFile && this.logFileStream) {
       this.logFileStream.write(formatted + '\n');
     }

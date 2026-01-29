@@ -179,7 +179,11 @@ NO_PROXY=localhost,127.0.0.1
     "mcp-abap-abap-adt-api": {
       "command": "node",
       "args": [
+<<<<<<< HEAD
         "E:/projects/abap-ai/mcp-abap-abap-adt-api/dist/index.js"
+=======
+        "E:/projects/abap/abap-adt-api/mcp-abap-abap-adt-api/dist/index.js"
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
       ],
       "env": {
         "SAP_URL": "https://vhcalnplci.local:8000",
@@ -211,7 +215,11 @@ NO_PROXY=localhost,127.0.0.1
     "mcp-abap-abap-adt-api": {
       "command": "node",
       "args": [
+<<<<<<< HEAD
         "E:/projects/abap-ai/mcp-abap-abap-adt-api/dist/index.js"
+=======
+        "E:/projects/abap/abap-adt-api/mcp-abap-abap-adt-api/dist/index.js"
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
       ]
     }
   }
@@ -229,7 +237,11 @@ NO_PROXY=localhost,127.0.0.1
   "mcpServers": {
     "mcp-abap-abap-adt-api": {
       "command": "node",
+<<<<<<< HEAD
       "args": ["E:/projects/abap-ai/mcp-abap-abap-adt-api/dist/index.js"]
+=======
+      "args": ["E:/projects/abap/abap-adt-api/mcp-abap-abap-adt-api/dist/index.js"]
+>>>>>>> beb1f5e1ee2374648cb08c5073912d3059d364d3
     }
   }
 }
