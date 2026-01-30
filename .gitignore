@@ -5,3 +5,4 @@ package-lock.json
 *.code-workspace
 logs/
 *.log
+.crush.json
