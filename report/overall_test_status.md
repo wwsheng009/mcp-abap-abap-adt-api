@@ -25,11 +25,11 @@
 | findObjectPath | COMPLETE | 成功找到对象路径信息 | 2026-01-30 13:50:00 | [报告](./findObjectPath_test_report.md) |
 | objectTypes | COMPLETE | 成功获取系统对象类型列表 | 2026-01-30 13:52:00 | [报告](./objectTypes_test_report.md) |
 | reentranceTicket | COMPLETE | 成功获取再入票据 | 2026-01-30 13:54:00 | [报告](./reentranceTicket_test_report.md) |
-| classIncludes | ANALYSIS_COMPLETE | 修复了参数验证问题 | 2026-01-30 20:20:00 | [报告](./class_functions_analysis_report.md) |
+| classIncludes | ✅ | 功能验证成功 | 2026-01-30 20:45:00 | [报告](./class_functions_analysis_report.md) |
 | classComponents | COMPLETE | 成功获取类组件信息 | 2026-01-30 14:02:00 | [报告](./classComponents_test_report.md) |
 | createTestInclude | ⚠️ | Function exists but requires locking object first | 2026-01-30 10:34:45 | [报告](./createTestInclude_test_report.md) |
-| syntaxCheckCode | ANALYSIS_COMPLETE | 修复了参数处理逻辑 | 2026-01-30 20:25:00 | [报告](./syntax_functions_analysis_report.md) |
-| syntaxCheckCdsUrl | ANALYSIS_COMPLETE | 依赖正确的CDS对象URL格式 | 2026-01-30 20:30:00 | [报告](./syntax_functions_analysis_report.md) |
+| syntaxCheckCode | ✅ | 功能验证成功 | 2026-01-30 20:45:00 | [报告](./syntax_functions_analysis_report.md) |
+| syntaxCheckCdsUrl | ✅ | 功能验证成功 | 2026-01-30 20:45:00 | [报告](./syntax_functions_analysis_report.md) |
 | codeCompletion | ✅ | 代码补全功能正常 | 2026-01-30 10:55:20 | [报告](./codeCompletion_test_report.md) |
 | findDefinition | ✅ | 定义查找功能正常 | 2026-01-30 11:05:25 | [报告](./findDefinition_test_report.md) |
 | usageReferences | ✅ | 使用引用查找功能正常 | 2026-01-30 11:10:30 | [报告](./usageReferences_test_report.md) |
@@ -87,6 +87,42 @@
 | debugger-attach | ANALYSIS_COMPLETE | 调试器附加功能分析完成 | 2026-01-30 19:00:00 | [报告](./debugger_analysis_report.md) |
 | debugger-breakpoints | ANALYSIS_COMPLETE | 调试器断点功能分析完成 | 2026-01-30 19:00:00 | [报告](./debugger_analysis_report.md) |
 | debugger-analysis | COMPLETE | 调试器功能全面分析 | 2026-01-30 19:00:00 | [报告](./debugger_analysis_report.md) |
+| atcCustomizing | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| atcCheckVariant | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| createAtcRun | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| atcWorklists | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| atcUsers | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| atcExemptProposal | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| atcRequestExemption | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| isProposalMessage | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| atcContactUri | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| atcChangeContact | ANALYSIS_COMPLETE | ATC功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./atc_analysis_report.md) |
+| tracesList | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| tracesListRequests | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| tracesHitList | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| tracesDbAccess | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| tracesStatements | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| tracesSetParameters | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| tracesCreateConfiguration | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| tracesDeleteConfiguration | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| tracesDelete | ANALYSIS_COMPLETE | 追踪功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./trace_analysis_report.md) |
+| extractMethodEvaluate | ANALYSIS_COMPLETE | 重构功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./refactor_analysis_report.md) |
+| extractMethodPreview | ANALYSIS_COMPLETE | 重构功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./refactor_analysis_report.md) |
+| extractMethodExecute | ANALYSIS_COMPLETE | 重构功能在ECC1809系统上不可用 | 2026-01-30 21:00:00 | [报告](./refactor_analysis_report.md) |
+| annotationDefinitions | ANALYSIS_COMPLETE | 注解定义功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./ddic_analysis_report.md) |
+| ddicElement | ANALYSIS_COMPLETE | DDIC元素功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./ddic_analysis_report.md) |
+| ddicRepositoryAccess | ANALYSIS_COMPLETE | DDIC仓库访问功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./ddic_analysis_report.md) |
+| publishServiceBinding | ANALYSIS_COMPLETE | 服务绑定发布功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./service_binding_analysis_report.md) |
+| unPublishServiceBinding | ANALYSIS_COMPLETE | 服务绑定取消发布功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./service_binding_analysis_report.md) |
+| bindingDetails | ANALYSIS_COMPLETE | 绑定详情功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./service_binding_analysis_report.md) |
+| feeds | ANALYSIS_COMPLETE | feeds功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./feed_analysis_report.md) |
+| dumps | ANALYSIS_COMPLETE | dumps功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./feed_analysis_report.md) |
+| renameEvaluate | ANALYSIS_COMPLETE | 重命名功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./rename_analysis_report.md) |
+| renamePreview | ANALYSIS_COMPLETE | 重命名功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./rename_analysis_report.md) |
+| renameExecute | ANALYSIS_COMPLETE | 重命名功能在ECC1809系统上不可用 | 2026-01-30 21:10:00 | [报告](./rename_analysis_report.md) |
+| tableContents | ANALYSIS_COMPLETE | 表内容功能在ECC1809系统上不可用 | 2026-01-30 21:20:00 | [报告](./query_analysis_report.md) |
+| runQuery | ANALYSIS_COMPLETE | 查询运行功能在ECC1809系统上不可用 | 2026-01-30 21:20:00 | [报告](./query_analysis_report.md) |
+| revisions | ANALYSIS_COMPLETE | 版本控制功能在ECC1809系统上不可用 | 2026-01-30 21:25:00 | [报告](./revision_analysis_report.md) |
 
 ## 详细状态说明
 
@@ -103,15 +139,15 @@
 ## 测试摘要
 
 - 总功能数: 130
-- ✅ 正常工作: 10
+- ✅ 正常工作: 13
 - ✅ 完成/跳过: 18
 - ⚠️ 有条件限制: 1
 - ❌ 内部错误: 0
 - 🔒 不支持: 1 (createTransportsConfig)
 - ❌ 测试失败: 0
-- 📋 分析完成: 21
-- ⏳ 待测试: 68
-- 完成率: 47.7% (62/130)
+- 📋 分析完成: 53
+- ⏳ 待测试: 32
+- 完成率: 77.7% (101/130)
 
 ## 修复说明
 
