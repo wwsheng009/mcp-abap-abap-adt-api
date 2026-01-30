@@ -180,3 +180,6 @@ const criticalIssues = worklists.objects.flatMap(o => o.findings).filter(f => f.
 // 6. 确认问题已修复
 ```
 
+## 相关工具
+- [atcWorklists](atcWorklists.md) - 获取工作列表
+- [atcCheckVariant](atcCheckVariant.md) - 获取检查变体

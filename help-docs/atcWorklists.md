@@ -292,3 +292,7 @@ for each issue in criticalIssues:
 4. **代码审查**: 将 ATC 结果作为代码审查依据
 5. **持续改进**: 持续运行 ATC 检查，持续改进代码质量
 6. **文档记录**: 记录发现的问题和修复措施，便于后续追踪
+
+## 相关工具
+- [createAtcRun](createAtcRun.md) - 创建ATC运行
+- [atcExemptProposal](atcExemptProposal.md) - 获取豁免建议

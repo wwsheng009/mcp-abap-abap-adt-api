@@ -1,88 +1,121 @@
 # debuggerStackTrace
 
-获取调试调用栈。
-
 ## 功能说明
-
-此工具用于获取当前调试会话的调用栈信息，显示程序的执行路径。
+获取调试器的堆栈跟踪信息，显示当前执行的程序调用链。这对于理解程序的执行流程和定位问题非常有用。
 
 ## 调用方法
 
-**参数**:
-- `semanticURIs` (boolean, 可选): 是否使用语义 URI（默认：true）
+### 通过MCP工具调用
+```json
+{
+  "tool": "debuggerStackTrace",
+  "arguments": {
+    "semanticURIs": true
+  }
+}
+```
 
-**返回值**:
+### 返回结果
 ```json
 {
   "status": "success",
   "result": {
-    "isRfc": false,
-    "debugCursorStackIndex": 2,
-    "isSameSystem": true,
-    "serverName": "vhcalnplci.local",
-    "stack": [
+    "stackFrames": [
       {
-        "stackPosition": 0,
-        "stackType": "ABAP",
-        "programName": "ZDEBUG_PROGRAM",
-        "includeName": 1002,
-        "line": 10,
-        "eventType": "LINE",
-        "eventName": "10",
-        "sourceType": "ABAP",
-        "systemProgram": false,
-        "isVit": false,
-        "uri": "/sap/bc/adt/programs/programs/zdebug_program/source/main",
-        "uriObj": "/sap/bc/adt/programs/programs/zdebug_program"
+        "index": 0,
+        "uri": "/sap/bc/adt/programs/programs/zmy_program.abap",
+        "line": 150,
+        "method": "process_order",
+        "program": "ZMY_PROGRAM"
+      },
+      {
+        "index": 1,
+        "uri": "/sap/bc/adt/programs/programs/zhandler.abap",
+        "line": 85,
+        "method": "handle_request",
+        "program": "ZHANDLER"
       }
     ]
   }
 }
 ```
 
-**示例**:
-```json
-{
-  "tool": "debuggerStackTrace",
-  "arguments": {
-    "semanticURIs": true
-  }
-}
-```
+## 参数说明
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| semanticURIs | boolean | 否 | 是否使用语义URI，默认为false |
 
 ## 注意事项
 
-1. **语义 URI**: 使用语义 URI 可以获得更可读的路径信息
-
-2. **栈帧顺序**: 第一个帧是当前的执行位置
-
-3. **调试游标**: `debugCursorStackIndex` 指示当前栈帧
-
-4. **RFC 调用**: `isRfc` 标识是否为 RFC 调用
-
-5. **系统程序**: `systemProgram` 标识是否为系统程序
+⚠️ **重要提示：**
+1. 必须在调试会话中调用
+2. 堆栈跟踪会显示从当前点到程序入口的完整调用链
+3. 使用语义URI可以获得更可读的结果
 
 ## 参数限制
 
-| 参数 | 类型 | 必需 | 限制 |
-|------|------|------|------|
-| semanticURIs | boolean | 否 | 默认 true |
+无特殊限制
 
 ## 与其他工具的关联性
 
-1. **调试流程**:
-   ```
-   debuggerListen → debuggerStackTrace → debuggerGoToStack → debuggerStep
-   ```
-
-2. **配合使用**:
-   ```
-   debuggerStackTrace + debuggerVariables = 完整的调试状态
-   ```
+- **debuggerAttach** - 附加到调试会话（必须先调用）
+- **debuggerGoToStack** - 跳转到指定堆栈帧
+- **debuggerVariables** - 查看变量（结合堆栈使用）
 
 ## 使用场景说明
 
-### 场景 1: 查看调用栈
+### 场景1：获取堆栈跟踪
+```json
+{
+  "semanticURIs": true
+}
+```
+
+### 场景2：获取原始URI的堆栈
+```json
+{
+  "semanticURIs": false
+}
+```
+
+## 最佳实践
+
+✅ **推荐做法：**
+1. 使用语义URI以获得更好的可读性
+2. 定期检查堆栈以跟踪执行流程
+3. 结合变量查看进行问题定位
+
+❌ **避免做法：**
+1. 不要在非调试状态下调用
+
+## 错误处理
+
+| 错误信息 | 原因 | 解决方案 |
+|---------|------|---------|
+| "No active debug session" | 没有活跃的调试会话 | 先附加到调试会话 |
+
+## 高级用法
+
+### 1. 分析堆栈跟踪
+```javascript
+async function analyzeStackTrace() {
+  const result = await debuggerStackTrace({ semanticURIs: true });
+  
+  const analysis = {
+    depth: result.stackFrames.length,
+    programs: [...new Set(result.stackFrames.map(f => f.program))],
+    methods: [...new Set(result.stackFrames.map(f => f.method))]
+  };
+  
+  console.log("Stack Analysis:", analysis);
+  return analysis;
+}
+```
+
+## 示例
+
+### 示例1：获取堆栈跟踪
 ```json
 {
   "tool": "debuggerStackTrace",
@@ -92,27 +125,35 @@
 }
 ```
 
-### 场景 2: 跳转到栈帧
+**预期结果：**
 ```json
-// 步骤 1: 获取调用栈
 {
-  "tool": "debuggerStackTrace",
-  "arguments": {}
-}
-
-// 步骤 2: 跳转到特定栈帧
-{
-  "tool": "debuggerGoToStack",
-  "arguments": {
-    "positionOrUrl": 2
+  "status": "success",
+  "result": {
+    "stackFrames": [
+      {
+        "index": 0,
+        "uri": "/sap/bc/adt/programs/programs/zmy_program.abap",
+        "line": 150,
+        "method": "process_order",
+        "program": "ZMY_PROGRAM"
+      },
+      {
+        "index": 1,
+        "uri": "/sap/bc/adt/programs/programs/zhandler.abap",
+        "line": 85,
+        "method": "handle_request",
+        "program": "ZHANDLER"
+      }
+    ]
   }
 }
 ```
 
-## 调试工作流程
+---
 
-```json
-// 标准调试流程
-debuggerSetBreakpoints → debuggerListen → debuggerStackTrace → debuggerGoToStack → debuggerStep → debuggerVariables
-```
+## 相关工具
 
+- [debuggerAttach](debuggerAttach.md) - 附加到调试会话
+- [debuggerGoToStack](debuggerGoToStack.md) - 跳转到堆栈帧
+- [debuggerVariables](debuggerVariables.md) - 查看变量
