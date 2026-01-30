@@ -16,13 +16,13 @@ export class DdicHandlers extends BaseHandler {
             },
             {
                 name: 'ddicElement',
-                description: 'Retrieves information about a DDIC element.',
+                description: 'Retrieves information about a DDIC element (table, structure, view, etc.).',
                 inputSchema: {
                     type: 'object',
                     properties: {
                         path: {
                             type: 'string',
-                            description: 'The path to the DDIC element.'
+                            description: 'The DDIC element name (e.g., "ZJG_REST_LOG", "USR01", "SPFLI"). Use table/view name only, not full ADT URI.'
                         },
                         getTargetForAssociation: {
                             type: 'boolean',
@@ -45,13 +45,13 @@ export class DdicHandlers extends BaseHandler {
             },
             {
                 name: 'ddicRepositoryAccess',
-                description: 'Accesses the DDIC repository.',
+                description: 'Accesses the DDIC repository for data source information.',
                 inputSchema: {
                     type: 'object',
                     properties: {
                         path: {
                             type: 'string',
-                            description: 'The path to the DDIC element.'
+                            description: 'The DDIC data source name (e.g., table name, CDS view name).'
                         }
                     },
                     required: ['path']
@@ -122,8 +122,17 @@ export class DdicHandlers extends BaseHandler {
     async handleDdicElement(args: any): Promise<any> {
         const startTime = performance.now();
         try {
+            // Validate path format - should be table/view name, not ADT URI
+            let path = args.path;
+            if (path && (path.startsWith('/') || path.startsWith('/sap/bc/adt'))) {
+                throw new McpError(
+                    ErrorCode.InvalidRequest,
+                    `Invalid path format. Use table/view name only (e.g., "ZJG_REST_LOG"), not ADT URI. Received: "${path}"`
+                );
+            }
+
             const result = await this.adtclient.ddicElement(
-                args.path,
+                path,
                 args.getTargetForAssociation,
                 args.getExtensionViews,
                 args.getSecondaryObjects
