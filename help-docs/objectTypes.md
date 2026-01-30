@@ -58,10 +58,22 @@
    objectTypes → 获取类型代码 → searchObject（使用特定类型）
    ```
 
-2. **与 validateNewObject 的关系**:
+2. **与 createObject 的关系**:
+   - **强烈关联**：createObject 工具必须使用从 objectTypes 获取的完整类型代码
+   - 类型代码格式为 `{主类型}/{子类型}`，如 `CLAS/OC` (类)、`PROG/P` (程序)、`TABL/DT` (表) 等
+   - 这是成功创建对象的关键要素
+   - **验证结果**：经过实际测试，以下类型已确认可成功创建：
+     - `CLAS/OC` (类)
+     - `PROG/P` (程序)
+     - `FUGR/F` (函数组)
+     - `TABL/DT` (数据库表)
+     - `INTF/OI` (接口)
+     - `DDLS/DF` (CDS 视图)
+
+3. **与 validateNewObject 的关系**:
    - 创建新对象时需要知道可用的对象类型
 
-3. **工作流程**:
+4. **工作流程**:
    ```
    objectTypes → searchObject → objectStructure
    ```

@@ -229,6 +229,8 @@ export class CodeAnalysisHandlers extends BaseHandler {
     async handleSyntaxCheckCdsUrl(args: any): Promise<any> {
         const startTime = performance.now();
         try {
+            // 直接调用 CDS 语法检查方法，而不是通过重载方法
+            // 因为 syntaxCheck 方法会根据 URL 模式自动判断使用哪种语法检查
             const result = await this.adtclient.syntaxCheck(args.cdsUrl);
             this.trackRequest(startTime, true);
             return {
@@ -253,7 +255,22 @@ export class CodeAnalysisHandlers extends BaseHandler {
     async handleSyntaxCheckCode(args: any): Promise<any> {
         const startTime = performance.now();
         try {
-            const result = await this.adtclient.syntaxCheck(args.url, args?.mainUrl, args?.code, args?.mainProgram, args?.version);
+            // 根据参数决定调用哪种语法检查方法
+            let result;
+            if (args.code && !args.url) {
+                // 如果只有代码内容没有URL，我们可能需要创建一个临时对象或使用不同的方法
+                // 但这在实际ADT中不太可行，所以可能需要用户提供一个有效的URL
+                throw new Error('For syntax checking code, a valid object URL is required along with the code content');
+            } else if (args.url && args.code) {
+                // 如果同时提供了URL和代码内容，调用带参数的语法检查
+                result = await this.adtclient.syntaxCheck(args.url, args.mainUrl || args.url, args.code, args.mainProgram, args.version);
+            } else if (args.url) {
+                // 如果只提供URL，执行CDS语法检查
+                result = await this.adtclient.syntaxCheck(args.url);
+            } else {
+                throw new Error('Either a valid URL or both URL and code are required for syntax check');
+            }
+            
             this.trackRequest(startTime, true);
             return {
                 content: [

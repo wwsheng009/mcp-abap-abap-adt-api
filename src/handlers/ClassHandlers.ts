@@ -76,19 +76,37 @@ export class ClassHandlers extends BaseHandler {
     async handleClassIncludes(args: any): Promise<any> {
         const startTime = performance.now();
         try {
-            const result = await ADTClient.classIncludes(args.clas);
-            this.trackRequest(startTime, true);
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: JSON.stringify({
-                            status: 'success',
-                            result
-                        })
-                    }
-                ]
-            };
+            // 首先搜索类对象以获取其URI
+            const searchResults = await this.adtclient.searchObject(args.clas, 'CLAS/OC', 1);
+            if (!searchResults || searchResults.length === 0) {
+                throw new Error(`Class ${args.clas} not found`);
+            }
+            
+            // 获取第一个搜索结果的URI
+            const classUri = searchResults[0]["adtcore:uri"];
+            
+            // 获取类的结构信息
+            const classStructure = await this.adtclient.objectStructure(classUri);
+            
+            // 检查是否是类结构（包含includes属性）并且includes是数组
+            if ('includes' in classStructure && Array.isArray(classStructure.includes)) {
+                // 然后使用classIncludes方法获取包含信息
+                const result = ADTClient.classIncludes(classStructure);
+                this.trackRequest(startTime, true);
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                status: 'success',
+                                result: Object.fromEntries(result) // 将Map转换为对象以便JSON序列化
+                            })
+                        }
+                    ]
+                };
+            } else {
+                throw new Error(`Object ${args.clas} is not a class or does not have includes or includes is not an array`);
+            }
         } catch (error: any) {
             this.trackRequest(startTime, false);
             throw new McpError(

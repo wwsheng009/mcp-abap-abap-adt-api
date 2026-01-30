@@ -39,7 +39,11 @@ export class ObjectRegistrationHandlers extends BaseHandler {
             description: { type: 'string' },
             parentPath: { type: 'string' },
             responsible: { type: 'string', optional: true },
-            transport: { type: 'string', optional: true }
+            transport: { type: 'string', optional: true },
+            // 包创建所需的额外参数
+            swcomp: { type: 'string', description: 'Software component (only required for DEVC/K objects)', optional: true },
+            transportLayer: { type: 'string', description: 'Transport layer (only required for DEVC/K objects)', optional: true },
+            packagetype: { type: 'string', description: 'Package type (only required for DEVC/K objects)', optional: true }
           },
           required: ['objtype', 'name', 'parentName', 'description', 'parentPath']
         }
@@ -109,25 +113,52 @@ export class ObjectRegistrationHandlers extends BaseHandler {
   async handleCreateObject(args: any): Promise<any> {    
     const startTime = performance.now();
     try {
-      const result = await this.adtclient.createObject(
-        args.objtype,
-        args.name,
-        args.parentName,
-        args.description,
-        args.parentPath,
-        args.responsible,
-        args.transport
-      );
-      this.trackRequest(startTime, true);
-      return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify({
-            status: 'success',
-            result
-          })
-        }]
-      };
+      // 如果是包对象且有额外参数，则使用带额外参数的调用
+      if (args.objtype === 'DEVC/K' && (args.swcomp !== undefined || args.transportLayer !== undefined || args.packagetype !== undefined)) {
+        const result = await this.adtclient.createObject(
+          args.objtype,
+          args.name,
+          args.parentName,
+          args.description,
+          args.parentPath,
+          args.responsible,
+          args.transport,
+          args.swcomp,
+          args.transportLayer,
+          args.packagetype
+        );
+        this.trackRequest(startTime, true);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              status: 'success',
+              result
+            })
+          }]
+        };
+      } else {
+        // 对于其他对象类型，使用原来的调用方式
+        const result = await this.adtclient.createObject(
+          args.objtype,
+          args.name,
+          args.parentName,
+          args.description,
+          args.parentPath,
+          args.responsible,
+          args.transport
+        );
+        this.trackRequest(startTime, true);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              status: 'success',
+              result
+            })
+          }]
+        };
+      }
     } catch (error: any) {
       this.trackRequest(startTime, false);
       throw new McpError(

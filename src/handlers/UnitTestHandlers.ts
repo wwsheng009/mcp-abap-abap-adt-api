@@ -131,7 +131,31 @@ export class UnitTestHandlers extends BaseHandler {
     async handleUnitTestEvaluation(args: any): Promise<any> {
         const startTime = performance.now();
         try {
-            const result = await this.adtclient.unitTestEvaluation(args.clas, args.flags);
+            // 首先需要获取类的信息以构建 UnitTestClass 对象
+            // 通过搜索对象获取类的URI和其他信息
+            const searchResults = await this.adtclient.searchObject(args.clas, 'CLAS/OC', 1);
+            if (!searchResults || searchResults.length === 0) {
+                throw new Error(`Class ${args.clas} not found`);
+            }
+            
+            // 获取类的结构信息
+            const classUri = searchResults[0]["adtcore:uri"];
+            const classStructure = await this.adtclient.objectStructure(classUri);
+            
+            // 构建一个基本的 UnitTestClass 对象
+            // 注意：这里我们只是构建一个基本结构，实际的 testmethods 需要通过其他方式获取
+            const unitTestClass = {
+                "adtcore:uri": classUri,
+                "adtcore:name": args.clas,
+                "adtcore:type": "CLAS/OC",
+                uriType: "object",
+                durationCategory: "short",
+                riskLevel: "harmless",
+                testmethods: [], // 可能需要通过其他方法获取测试方法
+                alerts: []
+            };
+            
+            const result = await this.adtclient.unitTestEvaluation(unitTestClass, args.flags);
             this.trackRequest(startTime, true);
             return {
                 content: [
