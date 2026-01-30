@@ -213,6 +213,13 @@ export const TOOL_GROUPS: ToolGroupsConfig = {
     tools: ['revisions']
   },
 
+  // Help documentation
+  help: {
+    description: 'Help and documentation tools. Use the "help" tool with a "toolName" argument (e.g., "login", "getObjectSource") to understand tool usage, parameters, and prerequisites before execution.',
+    enabledByDefault: true,
+    tools: ['help']
+  },
+
   // Health check (always enabled)
   health: {
     description: 'Server health check',
@@ -224,16 +231,16 @@ export const TOOL_GROUPS: ToolGroupsConfig = {
 // Preset levels for easy configuration
 export const PRESET_LEVELS: Record<string, string[]> = {
   // Minimal: read-only operations
-  minimal: ['auth', 'object', 'sourceV2', 'class', 'discovery', 'health'],
+  minimal: ['auth', 'object', 'sourceV2', 'class', 'discovery', 'health', 'help'],
 
   // Standard: basic development (includes minimal + write operations)
   standard: ['auth', 'lock', 'object', 'sourceV2', 'class', 'codeAnalysis',
-    'lifecycle', 'transport', 'node', 'ddic', 'discovery', 'health'],
+    'lifecycle', 'transport', 'node', 'ddic', 'discovery', 'health', 'help'],
 
   // Advanced: includes standard + testing, refactoring, git
   advanced: ['auth', 'lock', 'object', 'sourceV2', 'class', 'codeAnalysis',
     'lifecycle', 'transport', 'node', 'ddic', 'discovery', 'health',
-    'unitTest', 'rename', 'git', 'trace', 'prettyPrinter'],
+    'unitTest', 'rename', 'git', 'trace', 'prettyPrinter', 'help'],
 
   // Full: all tools
   full: Object.keys(TOOL_GROUPS)

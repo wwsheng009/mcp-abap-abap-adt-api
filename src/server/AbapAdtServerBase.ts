@@ -50,6 +50,7 @@ import { AtcHandlers } from '../handlers/AtcHandlers.js';
 import { TraceHandlers } from '../handlers/TraceHandlers.js';
 import { RefactorHandlers } from '../handlers/RefactorHandlers.js';
 import { RevisionHandlers } from '../handlers/RevisionHandlers.js';
+import { HelpHandler } from '../handlers/HelpHandler.js';
 
 /**
  * Base MCP Server class with all tool handlers registered
@@ -120,6 +121,7 @@ export class AbapAdtServerBase extends Server {
       trace: new TraceHandlers(this.adtClient),
       refactor: new RefactorHandlers(this.adtClient),
       revision: new RevisionHandlers(this.adtClient),
+      help: new HelpHandler(this.adtClient),
     };
 
     // Initialize logger (default to stdio, can be overridden)
@@ -175,6 +177,7 @@ export class AbapAdtServerBase extends Server {
       ...this.handlers.trace.getTools(),
       ...this.handlers.refactor.getTools(),
       ...this.handlers.revision.getTools(),
+      ...this.handlers.help.getTools(),
       {
         name: 'healthcheck',
         description: 'Check server health and connectivity',
@@ -450,6 +453,11 @@ export class AbapAdtServerBase extends Server {
             result = await this.handlers.revision.handle(request.params.name, request.params.arguments);
             break;
 
+          // Help tool
+          case 'help':
+            result = await this.handlers.help.handle(request.params.name, request.params.arguments);
+            break;
+
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${toolName}`);
         }
@@ -467,7 +475,7 @@ export class AbapAdtServerBase extends Server {
         this.logger.info('Tool invocation result', {
           requestId,
           toolName,
-          result: toolResult
+          // result: toolResult
         });
         return toolResult;
       } catch (error) {
