@@ -15,11 +15,11 @@
 ### 1. createTransport
 - **状态**: SUCCESS
 - **参数**: objSourceUrl=/sap/bc/adt/programs/programs/ztest01/source/main, REQUEST_TEXT=Test transport for validating createTransport function, DEVCLASS=$TMP
-- **返回值**: {"status":"success","transportNumber":"S4HK901722","message":"Transport created successfully"}
+- **返回值**: {"status":"success","transportNumber":"<TRANSPORT_NUMBER>","message":"Transport created successfully"}
 - **错误信息**: 无
 - **测试时间**: 2026-01-30 13:23:00
 
 #### 测试详情
-createTransport功能已成功执行，创建了一个新的传输请求，编号为S4HK901722。该传输请求用于测试目的，关联到了ZTEST01程序。
+createTransport功能已成功执行，创建了一个新的传输请求。该传输请求用于测试目的，关联到了ZTEST01程序。
 
 ---

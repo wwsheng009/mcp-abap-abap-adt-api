@@ -23,7 +23,7 @@
     "parentName": "ZDEV", 
     "description": "Test program for createObject functionality", 
     "parentPath": "/sap/bc/adt/packages/zdev",
-    "transport": "S4HK901376"
+    "transport": "<TRANSPORT_NUMBER>"
   }
 - 实际输出: MCP error -32603: Failed to create object: Unsupported object type
 - 预期输出: 应该返回创建成功的对象信息
@@ -36,7 +36,7 @@
     "parentName": "ZDEV", 
     "description": "Test class for createObject functionality", 
     "parentPath": "/sap/bc/adt/packages/zdev",
-    "transport": "S4HK901376"
+    "transport": "<TRANSPORT_NUMBER>"
   }
 - 实际输出: MCP error -32603: Failed to create object: Unsupported object type
 
@@ -51,7 +51,7 @@
     "swcomp": "HOME",
     "packagetype": "development",
     "transportLayer": "ZS4H",
-    "transport": "S4HK901376"
+    "transport": "<TRANSPORT_NUMBER>"
   }
 - 实际输出: MCP error -32603: Failed to create object: Unsupported object type
 

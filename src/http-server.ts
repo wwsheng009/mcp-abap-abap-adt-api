@@ -21,7 +21,7 @@ import { getLogger, TransportType } from './lib/structuredLogger.js';
 const transports = new Map<string, SSEServerTransport>();
 
 async function startHttpServer(port: number = 3000) {
-  const server = new AbapAdtServerBase(
+  const server = await AbapAdtServerBase.create(
     "mcp-abap-abap-adt-api-http",
     "0.2.0"
   );

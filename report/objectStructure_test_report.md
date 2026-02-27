@@ -15,7 +15,7 @@
 ### 1. objectStructure
 - **状态**: SUCCESS
 - **参数**: objectUrl=/sap/bc/adt/programs/programs/ztest01
-- **返回值**: {"status": "success", "structure": {"objectUrl": "/sap/bc/adt/programs/programs/ztest01", "metaData": {"program:lockedByEditor": false, "program:programType": "executableProgram", "abapsource:sourceUri": "source/main", "abapsource:fixPointArithmetic": true, "abapsource:activeUnicodeCheck": true, "adtcore:responsible": "WWSHENG", "adtcore:masterLanguage": "ZH", "adtcore:masterSystem": "S4H", "adtcore:name": "ZTEST01", "adtcore:type": "PROG/P", "adtcore:changedAt": 1768304527000, "adtcore:version": "inactive", "adtcore:createdAt": 1768262400000, "adtcore:changedBy": "WWSHENG", "adtcore:description": "test", "adtcore:descriptionTextLimit": 70, "adtcore:language": "ZH"}, "links": [...]}, "message": "Object structure retrieved successfully"}
+- **返回值**: {"status": "success", "structure": {"objectUrl": "/sap/bc/adt/programs/programs/ztest01", "metaData": {"program:lockedByEditor": false, "program:programType": "executableProgram", "abapsource:sourceUri": "source/main", "abapsource:fixPointArithmetic": true, "abapsource:activeUnicodeCheck": true, "adtcore:responsible": "<username>", "adtcore:masterLanguage": "EN", "adtcore:masterSystem": "<system_id>", "adtcore:name": "ZTEST01", "adtcore:type": "PROG/P", "adtcore:changedAt": <timestamp>, "adtcore:version": "inactive", "adtcore:createdAt": <timestamp>, "adtcore:changedBy": "<username>", "adtcore:description": "test", "adtcore:descriptionTextLimit": 70, "adtcore:language": "EN"}, "links": [...]}, "message": "Object structure retrieved successfully"}
 - **错误信息**: 无
 - **测试时间**: 2026-01-30 13:46:00
 

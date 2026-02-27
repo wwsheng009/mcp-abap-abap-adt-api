@@ -14,12 +14,12 @@
 
 ### 1. transportAddUser
 - **状态**: SUCCESS
-- **参数**: transportNumber=S4HK901728, user=WWSHENG
-- **返回值**: {"status":"success","result":{"tm:targetuser":"WWSHENG","tm:useraction":"tasks","tm:number":"S4HK901730","tm:uri":"/sap/bc/adt/cts/transportrequests/S4HK901730"}}
+- **参数**: transportNumber=<transport_number>, user=<username>
+- **返回值**: {"status":"success","result":{"tm:targetuser":"<username>","tm:useraction":"tasks","tm:number":"<task_number>","tm:uri":"/sap/bc/adt/cts/transportrequests/<task_number>"}}
 - **错误信息**: 无
 - **测试时间**: 2026-01-30 13:42:00
 
 #### 测试详情
-transportAddUser功能已成功执行，向传输请求S4HK901728中添加了用户WWSHENG。返回结果显示操作成功。功能按预期正常工作。
+transportAddUser功能已成功执行，向传输请求中添加了用户。返回结果显示操作成功。功能按预期正常工作。
 
 ---

@@ -69,11 +69,11 @@ Create a `.env` file in the project root:
 
 ```env
 # SAP Connection
-SAP_URL=http://sapbp1809.e2yun.com:8080
-SAP_USER=your_user
+SAP_URL=http://your-sap-server:8080
+SAP_USER=your_username
 SAP_PASSWORD=your_password
-SAP_CLIENT=300
-SAP_LANGUAGE=ZH
+SAP_CLIENT=800
+SAP_LANGUAGE=EN
 
 # Tool Groups (optional)
 # Options: minimal, standard, advanced, full, or custom comma-separated groups

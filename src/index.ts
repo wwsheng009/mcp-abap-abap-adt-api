@@ -21,7 +21,7 @@ import { protectStdout } from './lib/stdioFirewall.js';
 async function main() {
   // Set MCP stdio mode to enable protocol protection
   process.env.MCP_STDIO_MODE = 'true';
-  
+
   // Activate stdout firewall to prevent protocol pollution
   protectStdout();
 
@@ -32,7 +32,7 @@ async function main() {
   process.env.LOG_FILE = 'true';
   const logger = getLogger(TransportType.STDIO);
 
-  const server = new AbapAdtServerBase(
+  const server = await AbapAdtServerBase.create(
     "mcp-abap-abap-adt-api",
     "0.2.0"
   );

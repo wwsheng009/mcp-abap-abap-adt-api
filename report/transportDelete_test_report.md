@@ -14,12 +14,12 @@
 
 ### 1. transportDelete
 - **状态**: SUCCESS
-- **参数**: transportNumber=S4HK901722
+- **参数**: transportNumber=<TRANSPORT_NUMBER>
 - **返回值**: {"status":"success"}
 - **错误信息**: 无
 - **测试时间**: 2026-01-30 13:34:00
 
 #### 测试详情
-transportDelete功能已成功执行，删除了传输请求S4HK901722。功能按预期正常工作。
+transportDelete功能已成功执行，删除了传输请求。功能按预期正常工作。
 
 ---

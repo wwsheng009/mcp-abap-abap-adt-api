@@ -17,11 +17,29 @@ import {
   McpError,
   ErrorCode
 } from "@modelcontextprotocol/sdk/types.js";
-import { ADTClient, session_types } from "abap-adt-api";
+import { ADTClient, session_types, getConnectionTypeFromEnv } from "abap-adt-api";
 import { filterToolsByGroups } from '../toolGroups.js';
 import { getLogger, TransportType } from '../lib/structuredLogger.js';
 import { performance } from 'perf_hooks';
 import { randomUUID } from 'crypto';
+
+/**
+ * Server initialization options
+ */
+export interface ServerInitOptions {
+  /** SAP URL for HTTP connection (deprecated - use environment variables) */
+  sapUrl?: string;
+  /** SAP username (deprecated - use environment variables) */
+  sapUser?: string;
+  /** SAP password (deprecated - use environment variables) */
+  sapPassword?: string;
+  /** SAP client (deprecated - use environment variables) */
+  sapClient?: string;
+  /** SAP language (deprecated - use environment variables) */
+  sapLanguage?: string;
+  /** ADT client instance (optional - if provided, will skip initialization) */
+  adtClient?: ADTClient;
+}
 
 // Import all handlers
 import { AuthHandlers } from '../handlers/AuthHandlers.js';
@@ -54,7 +72,7 @@ import { HelpHandler } from '../handlers/HelpHandler.js';
 
 /**
  * Base MCP Server class with all tool handlers registered
- * 
+ *
  * This class can be extended for different transport modes (stdio, HTTP, SSE, Streamable)
  * All tools and handler logic is centralized here.
  */
@@ -64,7 +82,82 @@ export class AbapAdtServerBase extends Server {
   protected logger: ReturnType<typeof getLogger>;
   protected transportType: TransportType = TransportType.STDIO;
 
-  constructor(serverName: string, serverVersion: string = "0.2.0") {
+  /**
+   * Create a new AbapAdtServerBase instance with async client initialization
+   *
+   * This is the recommended method for creating a server instance, as it supports
+   * both HTTP and RFC connections via environment variables.
+   *
+   * @param serverName - Server name
+   * @param serverVersion - Server version
+   * @returns Promise resolving to AbapAdtServerBase instance
+   *
+   * @example HTTP connection using environment variables
+   * ```typescript
+   * // Set environment variables
+   * process.env.SAP_URL = "http://sap.company.com:8080"
+   * process.env.SAP_USER = "myuser"
+   * process.env.SAP_PASSWORD = "mypass"
+   *
+   * const server = await AbapAdtServerBase.create("my-server")
+   * ```
+   *
+   * @example RFC connection using environment variables
+   * ```typescript
+   * // Set environment variables
+   * process.env.SAP_HOST = "your-sap-host"
+   * process.env.SAP_SYSNR = "00"
+   * process.env.SAP_USER = "myuser"
+   * process.env.SAP_PASSWORD = "mypass"
+   * process.env.SAP_CLIENT = "800"
+   *
+   * const server = await AbapAdtServerBase.create("my-server")
+   * ```
+   */
+  static async create(
+    serverName: string,
+    serverVersion: string = "0.2.0",
+    options?: ServerInitOptions
+  ): Promise<AbapAdtServerBase> {
+    let adtClient: ADTClient;
+
+    // If ADT client is provided, use it
+    if (options?.adtClient) {
+      adtClient = options.adtClient;
+    } else {
+      // Determine connection type
+      const connectionType = getConnectionTypeFromEnv();
+
+      // Otherwise, create from environment variables
+      const clientOrPromise = ADTClient.fromEnv();
+
+      // Handle both synchronous (HTTP) and asynchronous (RFC) results
+      adtClient = clientOrPromise instanceof ADTClient
+        ? clientOrPromise
+        : await clientOrPromise;
+
+      // Log connection type
+      const logger = getLogger(TransportType.STDIO);
+      logger.info('Connection type', {
+        connectionType,
+        baseUrl: adtClient.baseUrl || 'N/A (RFC connection)',
+        host: process.env.SAP_HOST || 'N/A',
+        sysnr: process.env.SAP_SYSNR || 'N/A',
+        router: process.env.SAP_ROUTER || 'N/A'
+      });
+    }
+
+    return new AbapAdtServerBase(serverName, serverVersion, adtClient);
+  }
+
+  /**
+   * Constructor (private - use create() factory method)
+   *
+   * @param serverName - Server name
+   * @param serverVersion - Server version
+   * @param adtClient - ADT client instance
+   */
+  private constructor(serverName: string, serverVersion: string, adtClient: ADTClient) {
     super(
       {
         name: serverName,
@@ -77,20 +170,7 @@ export class AbapAdtServerBase extends Server {
       }
     );
 
-    // Validate environment variables
-    const missingVars = ['SAP_URL', 'SAP_USER', 'SAP_PASSWORD'].filter(v => !process.env[v]);
-    if (missingVars.length > 0) {
-      throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-    }
-
-    // Initialize ADT client
-    this.adtClient = new ADTClient(
-      process.env.SAP_URL as string,
-      process.env.SAP_USER as string,
-      process.env.SAP_PASSWORD as string,
-      process.env.SAP_CLIENT as string,
-      process.env.SAP_LANGUAGE as string
-    );
+    this.adtClient = adtClient;
     this.adtClient.stateful = session_types.stateful;
 
     // Initialize all handlers

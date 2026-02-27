@@ -104,7 +104,7 @@
     "parentName": "",
     "description": "Test Package",
     "parentPath": "",
-    "transport": "S4HK901712",
+    "transport": "<TRANSPORT_NUMBER>",
     "swcomp": "HOME",
     "packagetype": "development",
     "transportLayer": "ZS4H",
@@ -150,7 +150,7 @@
     "parentName": "ZTEST_PACKAGE",
     "description": "Sub Package",
     "parentPath": "/sap/bc/adt/packages/ztest_package",
-    "transport": "S4HK901712",
+    "transport": "<TRANSPORT_NUMBER>",
     "swcomp": "HOME",
     "packagetype": "development",
     "transportLayer": "ZS4H"
@@ -185,8 +185,8 @@
 
 | 场景 | name | parentName | swcomp | transportLayer | transport |
 |------|------|------------|--------|----------------|-----------|
-| **根级别普通包** | `ZTEST_XXX` | `''` | `HOME` | `ZS4H` | `S4HK9...` |
-| **普通包子包** | `ZTEST_SUB` | `ZTEST_XXX` | `HOME` | `ZS4H` | `S4HK9...` |
+| **根级别普通包** | `ZTEST_XXX` | `''` | `HOME` | `ZS4H` | `<TRANSPORT_NUMBER>` |
+| **普通包子包** | `ZTEST_SUB` | `ZTEST_XXX` | `HOME` | `ZS4H` | `<TRANSPORT_NUMBER>` |
 | **$TMP 子包** | `$ZTMP_XXX` | `$TMP` | `LOCAL` | `''` | `''` |
 
 ## 使用场景说明

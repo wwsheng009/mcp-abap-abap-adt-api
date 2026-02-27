@@ -18,7 +18,7 @@
       "startColumn": 10,
       "endColumn": 20
     },
-    "transport": "S4HK900123"
+    "transport": "<TRANSPORT_NUMBER>"
   }
 }
 ```
@@ -108,7 +108,7 @@
     "startColumn": 10,
     "endColumn": 20
   },
-  "transport": "S4HK900123"
+  "transport": "<TRANSPORT_NUMBER>"
 }
 ```
 

@@ -37,7 +37,7 @@
   "result": {
     "executed": true,
     "changesApplied": 15,
-    "transport": "S4HK900123",
+    "transport": "<TRANSPORT_NUMBER>",
     "message": "Rename completed successfully"
   }
 }
@@ -189,7 +189,7 @@ async function safeRename(uri, line, startColumn, endColumn, newName) {
   "result": {
     "executed": true,
     "changesApplied": 15,
-    "transport": "S4HK900123",
+    "transport": "<TRANSPORT_NUMBER>",
     "message": "Rename completed successfully"
   }
 }

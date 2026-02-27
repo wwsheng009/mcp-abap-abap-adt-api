@@ -36,7 +36,7 @@
     "executed": true,
     "methodName": "calculate_total",
     "changesApplied": 2,
-    "transport": "S4HK900123",
+    "transport": "<TRANSPORT_NUMBER>",
     "message": "Method extraction completed successfully"
   }
 }
@@ -194,7 +194,7 @@ async function safeExtractMethod(uri, range, methodName) {
     "executed": true,
     "methodName": "calculate_total",
     "changesApplied": 2,
-    "transport": "S4HK900123",
+    "transport": "<TRANSPORT_NUMBER>",
     "message": "Method extraction completed successfully"
   }
 }

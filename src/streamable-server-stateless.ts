@@ -20,7 +20,7 @@ import { getEnabledToolGroups } from './toolGroups.js';
 import { getLogger, TransportType } from './lib/structuredLogger.js';
 
 async function startServer(port: number = 3000) {
-  const server = new AbapAdtServerBase(
+  const server = await AbapAdtServerBase.create(
     "mcp-abap-abap-adt-api-stateless",
     "0.2.0"
   );

@@ -14,12 +14,12 @@
 
 ### 1. transportRelease
 - **状态**: SUCCESS
-- **参数**: transportNumber=S4HK901724
-- **返回值**: {"status":"success","result":[{"chkrun:reporter":"transportrelease","chkrun:triggeringUri":"/sap/bc/adt/cts/transportrequests/S4HK901724","chkrun:status":"released","chkrun:statusText":"Transport request/task S4HK901724 was successfully released","messages":[]}]}
+- **参数**: transportNumber=<TRANSPORT_NUMBER>
+- **返回值**: {"status":"success","result":[{"chkrun:reporter":"transportrelease","chkrun:triggeringUri":"/sap/bc/adt/cts/transportrequests/<TRANSPORT_NUMBER>","chkrun:status":"released","chkrun:statusText":"Transport request/task was successfully released","messages":[]}]}
 - **错误信息**: 无
 - **测试时间**: 2026-01-30 13:36:00
 
 #### 测试详情
-transportRelease功能已成功执行，释放了传输请求S4HK901724。返回结果显示传输请求已成功释放。功能按预期正常工作。
+transportRelease功能已成功执行，释放了传输请求。返回结果显示传输请求已成功释放。功能按预期正常工作。
 
 ---
